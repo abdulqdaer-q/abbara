@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-gateway-config
+  namespace: movenow
+  labels:
+    app: api-gateway
+data:
+  CORS_ORIGIN: "https://app.movenow.com,https://porter.movenow.com"
+  LOG_LEVEL: "info"
+  RATE_LIMIT_WINDOW_MS: "60000"
+  RATE_LIMIT_MAX_REQUESTS: "100"
+  JWT_ACCESS_EXPIRY: "15m"
+  JWT_REFRESH_EXPIRY: "7d"
+  # Internal service URLs
+  AUTH_SERVICE_URL: "http://auth-service/trpc"
+  ORDERS_SERVICE_URL: "http://orders-service/trpc"
+  PRICING_SERVICE_URL: "http://pricing-service/trpc"
+  PORTERS_SERVICE_URL: "http://porters-service/trpc"
+  PAYMENTS_SERVICE_URL: "http://payments-service/trpc"
+  NOTIFICATIONS_SERVICE_URL: "http://notifications-service/trpc"
+  REALTIME_SERVICE_URL: "http://realtime-service"

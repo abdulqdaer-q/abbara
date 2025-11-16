@@ -1,0 +1,118 @@
+version: '3.8'
+
+services:
+  # API Gateway
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: movenow-api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - HOST=0.0.0.0
+      - CORS_ORIGIN=http://localhost:3001,http://localhost:3002
+      - JWT_ACCESS_SECRET=dev-access-secret-change-in-production
+      - JWT_REFRESH_SECRET=dev-refresh-secret-change-in-production
+      - JWT_ACCESS_EXPIRY=15m
+      - JWT_REFRESH_EXPIRY=7d
+      - RATE_LIMIT_WINDOW_MS=60000
+      - RATE_LIMIT_MAX_REQUESTS=100
+      - AUTH_SERVICE_URL=http://auth-service:3001/trpc
+      - ORDERS_SERVICE_URL=http://orders-service:3002/trpc
+      - PRICING_SERVICE_URL=http://pricing-service:3003/trpc
+      - PORTERS_SERVICE_URL=http://porters-service:3004/trpc
+      - PAYMENTS_SERVICE_URL=http://payments-service:3005/trpc
+      - NOTIFICATIONS_SERVICE_URL=http://notifications-service:3006/trpc
+      - REALTIME_SERVICE_URL=http://realtime-service:3007
+      - LOG_LEVEL=debug
+      - SERVICE_NAME=api-gateway
+    networks:
+      - movenow-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Mock Auth Service (for local testing)
+  auth-service:
+    image: mockserver/mockserver:latest
+    container_name: movenow-auth-service-mock
+    ports:
+      - "3001:3001"
+    environment:
+      - MOCKSERVER_SERVER_PORT=3001
+      - MOCKSERVER_LOG_LEVEL=WARN
+    networks:
+      - movenow-network
+
+  # Mock Orders Service (for local testing)
+  orders-service:
+    image: mockserver/mockserver:latest
+    container_name: movenow-orders-service-mock
+    ports:
+      - "3002:3002"
+    environment:
+      - MOCKSERVER_SERVER_PORT=3002
+      - MOCKSERVER_LOG_LEVEL=WARN
+    networks:
+      - movenow-network
+
+  # Mock Pricing Service (for local testing)
+  pricing-service:
+    image: mockserver/mockserver:latest
+    container_name: movenow-pricing-service-mock
+    ports:
+      - "3003:3003"
+    environment:
+      - MOCKSERVER_SERVER_PORT=3003
+      - MOCKSERVER_LOG_LEVEL=WARN
+    networks:
+      - movenow-network
+
+  # Mock Porters Service (for local testing)
+  porters-service:
+    image: mockserver/mockserver:latest
+    container_name: movenow-porters-service-mock
+    ports:
+      - "3004:3004"
+    environment:
+      - MOCKSERVER_SERVER_PORT=3004
+      - MOCKSERVER_LOG_LEVEL=WARN
+    networks:
+      - movenow-network
+
+  # Mock Payments Service (for local testing)
+  payments-service:
+    image: mockserver/mockserver:latest
+    container_name: movenow-payments-service-mock
+    ports:
+      - "3005:3005"
+    environment:
+      - MOCKSERVER_SERVER_PORT=3005
+      - MOCKSERVER_LOG_LEVEL=WARN
+    networks:
+      - movenow-network
+
+  # Mock Notifications Service (for local testing)
+  notifications-service:
+    image: mockserver/mockserver:latest
+    container_name: movenow-notifications-service-mock
+    ports:
+      - "3006:3006"
+    environment:
+      - MOCKSERVER_SERVER_PORT=3006
+      - MOCKSERVER_LOG_LEVEL=WARN
+    networks:
+      - movenow-network
+
+networks:
+  movenow-network:
+    driver: bridge
+    name: movenow-network
