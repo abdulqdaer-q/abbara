@@ -37,10 +37,16 @@ export const PaymentMethodSchema = z.enum(['card', 'wallet', 'cash']);
 export type PaymentMethod = z.infer<typeof PaymentMethodSchema>;
 
 /**
- * User role
+ * User role - Updated to match auth service requirements
  */
-export const UserRoleSchema = z.enum(['client', 'porter', 'admin', 'superadmin']);
+export const UserRoleSchema = z.enum(['CUSTOMER', 'PORTER', 'ADMIN']);
 export type UserRole = z.infer<typeof UserRoleSchema>;
+
+/**
+ * Porter verification status
+ */
+export const VerificationStatusSchema = z.enum(['PENDING', 'VERIFIED', 'REJECTED']);
+export type VerificationStatus = z.infer<typeof VerificationStatusSchema>;
 
 /**
  * Create Order Input Schema
@@ -95,16 +101,27 @@ export type PorterSummary = z.infer<typeof PorterSummarySchema>;
  * Events
  */
 export enum EventType {
+  // Order events
   ORDER_CREATED = 'order.created',
   ORDER_CONFIRMED = 'order.confirmed',
   ORDER_ASSIGNED = 'order.assigned',
   ORDER_STARTED = 'order.started',
   ORDER_COMPLETED = 'order.completed',
   ORDER_CANCELLED = 'order.cancelled',
+
+  // Payment events
   PAYMENT_INITIATED = 'payment.initiated',
   PAYMENT_COMPLETED = 'payment.completed',
   PAYMENT_FAILED = 'payment.failed',
+
+  // Porter events
   PORTER_LOCATION_UPDATED = 'porter.location.updated',
+  PORTER_VERIFICATION_REQUESTED = 'porter.verification.requested',
+  PORTER_VERIFIED = 'porter.verified',
+
+  // User events
+  USER_CREATED = 'user.created',
+  USER_UPDATED = 'user.updated',
 }
 
 export interface BaseEvent {
@@ -150,10 +167,49 @@ export interface PaymentCompletedEvent extends BaseEvent {
 }
 
 /**
+ * User and Auth Events
+ */
+export interface UserCreatedEvent extends BaseEvent {
+  type: EventType.USER_CREATED;
+  userId: string;
+  email?: string;
+  phone?: string;
+  role: UserRole;
+  createdAt: Date;
+}
+
+export interface UserUpdatedEvent extends BaseEvent {
+  type: EventType.USER_UPDATED;
+  userId: string;
+  updatedFields: string[];
+  updatedAt: Date;
+}
+
+export interface PorterVerificationRequestedEvent extends BaseEvent {
+  type: EventType.PORTER_VERIFICATION_REQUESTED;
+  userId: string;
+  porterId: string;
+  documentTypes: string[];
+  requestedAt: Date;
+}
+
+export interface PorterVerifiedEvent extends BaseEvent {
+  type: EventType.PORTER_VERIFIED;
+  userId: string;
+  porterId: string;
+  verificationStatus: VerificationStatus;
+  verifiedAt: Date;
+}
+
+/**
  * Event union type
  */
 export type DomainEvent =
   | OrderCreatedEvent
   | OrderAssignedEvent
   | OrderCompletedEvent
-  | PaymentCompletedEvent;
+  | PaymentCompletedEvent
+  | UserCreatedEvent
+  | UserUpdatedEvent
+  | PorterVerificationRequestedEvent
+  | PorterVerifiedEvent;

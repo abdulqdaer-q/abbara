@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-users-service-config
+data:
+  NODE_ENV: "production"
+  PORT: "3001"
+  SERVICE_NAME: "auth-users-service"
+
+  # JWT Configuration
+  JWT_ACCESS_EXPIRY: "15m"
+  JWT_REFRESH_EXPIRY: "7d"
+  JWT_ALGORITHM: "RS256"
+
+  # Password Hashing
+  ARGON2_MEMORY_COST: "65536"
+  ARGON2_TIME_COST: "3"
+  ARGON2_PARALLELISM: "4"
+
+  # Password Reset
+  PASSWORD_RESET_TOKEN_EXPIRY: "1h"
+
+  # Rate Limiting
+  RATE_LIMIT_WINDOW_MS: "900000"
+  RATE_LIMIT_MAX_REQUESTS: "5"
+
+  # Message Bus
+  MESSAGE_BUS_TYPE: "kafka"
+  KAFKA_CLIENT_ID: "auth-users-service"
+  KAFKA_TOPIC_PREFIX: "movenow"
+
+  # Monitoring
+  ENABLE_METRICS: "true"
+  METRICS_PORT: "9090"
+
+  # Logging
+  LOG_LEVEL: "info"
