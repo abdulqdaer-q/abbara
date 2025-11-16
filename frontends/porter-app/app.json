@@ -1,0 +1,64 @@
+{
+  "expo": {
+    "name": "MoveNow Porter",
+    "slug": "movenow-porter",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "movenow-porter",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.movenow.porter",
+      "infoPlist": {
+        "NSCameraUsageDescription": "We need camera access to upload verification documents.",
+        "NSLocationWhenInUseUsageDescription": "We need your location to match you with nearby jobs.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "We need your location to share with customers during deliveries.",
+        "NSPhotoLibraryUsageDescription": "We need photo library access to upload verification documents.",
+        "UIBackgroundModes": ["location"]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.movenow.porter",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "NOTIFICATIONS"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/images/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow MoveNow to use your location to share with customers during deliveries."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#ffffff"
+        }
+      ]
+    ]
+  }
+}
