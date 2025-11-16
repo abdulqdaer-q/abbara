@@ -29,6 +29,14 @@ describe('Assignment Workflows Integration Tests', () => {
         },
       });
 
+      // Verify order was created and exists in database
+      expect(order.id).toBeDefined();
+      const verifyOrder = await prisma.order.findUnique({
+        where: { id: order.id },
+      });
+      expect(verifyOrder).toBeDefined();
+      expect(verifyOrder?.id).toBe(order.id);
+
       const assignment = await prisma.orderAssignment.create({
         data: {
           orderId: order.id,
