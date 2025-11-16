@@ -1,0 +1,170 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  labels:
+    app: notification-service
+    tier: backend
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+        tier: backend
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '3005'
+        prometheus.io/path: '/metrics'
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - notification-service
+                topologyKey: kubernetes.io/hostname
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+        - name: notification-service
+          image: movenow/notification-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3005
+              name: http
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              value: 'production'
+            - name: PORT
+              value: '3005'
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: notification-service-config
+                  key: LOG_LEVEL
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: notification-service-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: notification-service-secrets
+                  key: REDIS_URL
+            - name: RABBITMQ_URL
+              valueFrom:
+                secretKeyRef:
+                  name: notification-service-secrets
+                  key: RABBITMQ_URL
+            - name: EVENT_QUEUE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: notification-service-config
+                  key: EVENT_QUEUE_NAME
+            - name: FCM_PROJECT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: notification-service-secrets
+                  key: FCM_PROJECT_ID
+                  optional: true
+            - name: FCM_CLIENT_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: notification-service-secrets
+                  key: FCM_CLIENT_EMAIL
+                  optional: true
+            - name: FCM_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: notification-service-secrets
+                  key: FCM_PRIVATE_KEY
+                  optional: true
+            - name: EMAIL_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: notification-service-config
+                  key: EMAIL_ENABLED
+            - name: SMS_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: notification-service-config
+                  key: SMS_ENABLED
+            - name: CORS_ORIGIN
+              valueFrom:
+                configMapKeyRef:
+                  name: notification-service-config
+                  key: CORS_ORIGIN
+            - name: MAX_RETRY_ATTEMPTS
+              valueFrom:
+                configMapKeyRef:
+                  name: notification-service-config
+                  key: MAX_RETRY_ATTEMPTS
+            - name: NOTIFICATION_BATCH_SIZE
+              valueFrom:
+                configMapKeyRef:
+                  name: notification-service-config
+                  key: NOTIFICATION_BATCH_SIZE
+            - name: RATE_LIMIT_PER_USER_PER_MINUTE
+              valueFrom:
+                configMapKeyRef:
+                  name: notification-service-config
+                  key: RATE_LIMIT_PER_USER_PER_MINUTE
+          resources:
+            requests:
+              memory: '256Mi'
+              cpu: '250m'
+            limits:
+              memory: '512Mi'
+              cpu: '500m'
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3005
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3005
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1001
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: logs
+              mountPath: /app/logs
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: logs
+          emptyDir: {}

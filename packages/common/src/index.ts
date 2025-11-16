@@ -105,6 +105,12 @@ export enum EventType {
   PAYMENT_COMPLETED = 'payment.completed',
   PAYMENT_FAILED = 'payment.failed',
   PORTER_LOCATION_UPDATED = 'porter.location.updated',
+  NOTIFICATION_SENT = 'notification.sent',
+  NOTIFICATION_DELIVERED = 'notification.delivered',
+  NOTIFICATION_READ = 'notification.read',
+  NOTIFICATION_FAILED = 'notification.failed',
+  MESSAGE_SENT = 'message.sent',
+  MESSAGE_READ = 'message.read',
 }
 
 export interface BaseEvent {
@@ -149,6 +155,52 @@ export interface PaymentCompletedEvent extends BaseEvent {
   transactionId: string;
 }
 
+export interface NotificationSentEvent extends BaseEvent {
+  type: EventType.NOTIFICATION_SENT;
+  notificationId: string;
+  recipientId: string;
+  channels: string[];
+  messageType: string;
+}
+
+export interface NotificationDeliveredEvent extends BaseEvent {
+  type: EventType.NOTIFICATION_DELIVERED;
+  notificationId: string;
+  recipientId: string;
+  channel: string;
+}
+
+export interface NotificationReadEvent extends BaseEvent {
+  type: EventType.NOTIFICATION_READ;
+  notificationId: string;
+  recipientId: string;
+  readAt: Date;
+}
+
+export interface NotificationFailedEvent extends BaseEvent {
+  type: EventType.NOTIFICATION_FAILED;
+  notificationId: string;
+  recipientId: string;
+  channel: string;
+  errorMessage: string;
+}
+
+export interface MessageSentEvent extends BaseEvent {
+  type: EventType.MESSAGE_SENT;
+  messageId: string;
+  conversationId: string;
+  senderId: string;
+  recipientId: string;
+}
+
+export interface MessageReadEvent extends BaseEvent {
+  type: EventType.MESSAGE_READ;
+  messageId: string;
+  conversationId: string;
+  recipientId: string;
+  readAt: Date;
+}
+
 /**
  * Event union type
  */
@@ -156,4 +208,10 @@ export type DomainEvent =
   | OrderCreatedEvent
   | OrderAssignedEvent
   | OrderCompletedEvent
-  | PaymentCompletedEvent;
+  | PaymentCompletedEvent
+  | NotificationSentEvent
+  | NotificationDeliveredEvent
+  | NotificationReadEvent
+  | NotificationFailedEvent
+  | MessageSentEvent
+  | MessageReadEvent;
