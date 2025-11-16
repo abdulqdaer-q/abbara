@@ -150,10 +150,15 @@ export interface PaymentCompletedEvent extends BaseEvent {
 }
 
 /**
- * Event union type
+ * Event union type (legacy - for backward compatibility)
  */
 export type DomainEvent =
   | OrderCreatedEvent
   | OrderAssignedEvent
   | OrderCompletedEvent
   | PaymentCompletedEvent;
+
+// Export all new order-related types, schemas, and events
+export * from './types/orders';
+export * from './events/orders';
+export * from './schemas/orders';

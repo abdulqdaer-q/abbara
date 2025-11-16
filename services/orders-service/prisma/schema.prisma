@@ -1,0 +1,378 @@
+// This is your Prisma schema file for Orders Service
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+// Order status enum
+enum OrderStatus {
+  CREATED
+  TENTATIVELY_ASSIGNED
+  ASSIGNED
+  ACCEPTED
+  ARRIVED
+  LOADED
+  EN_ROUTE
+  DELIVERED
+  COMPLETED
+  CLOSED
+  CANCELLED
+  FAILED
+}
+
+// Assignment status enum
+enum AssignmentStatus {
+  OFFERED
+  TENTATIVE
+  ACCEPTED
+  REJECTED
+  REVOKED
+  EXPIRED
+}
+
+// Waypoint status enum
+enum WaypointStatus {
+  PENDING
+  ARRIVED
+  COMPLETED
+  SKIPPED
+}
+
+// Evidence type enum
+enum EvidenceType {
+  PRE_MOVE
+  POST_MOVE
+  DAMAGE
+  SIGNATURE
+  OTHER
+}
+
+// Order event type enum
+enum OrderEventType {
+  CREATED
+  UPDATED
+  ASSIGNED
+  TENTATIVELY_ASSIGNED
+  ACCEPTED
+  REJECTED
+  ARRIVED
+  LOADED
+  EN_ROUTE
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  FAILED
+  WAYPOINT_UPDATED
+  EVIDENCE_UPLOADED
+  OFFER_SENT
+  OFFER_EXPIRED
+  ASSIGNMENT_REVOKED
+}
+
+// Cancellation reason enum
+enum CancellationReason {
+  CUSTOMER_REQUEST
+  PORTER_UNAVAILABLE
+  PRICING_ISSUE
+  FRAUD_DETECTED
+  DUPLICATE_ORDER
+  CUSTOMER_NO_SHOW
+  WEATHER
+  VEHICLE_ISSUE
+  OTHER
+}
+
+// Main Order model - source of truth for order lifecycle
+model Order {
+  id                    String      @id @default(cuid())
+  customerId            String
+  status                OrderStatus @default(CREATED)
+
+  // Pricing information
+  priceCents            Int
+  currency              String      @default("USD")
+
+  // Porter requirements
+  porterCountRequested  Int         @default(1)
+  porterCountAssigned   Int         @default(0)
+  vehicleType           String
+
+  // Scheduling
+  scheduledAt           DateTime?
+
+  // Special instructions and notes
+  specialInstructions   String?     @db.Text
+
+  // Payment
+  paymentMethodHint     String?
+
+  // Cancellation info
+  cancelledAt           DateTime?
+  cancelledBy           String?
+  cancellationReason    CancellationReason?
+  cancellationFeeCents  Int?
+
+  // Dispute and fraud flags
+  isDisputed            Boolean     @default(false)
+  isFraudFlagged        Boolean     @default(false)
+
+  // Business/recurring order flags
+  isBusinessOrder       Boolean     @default(false)
+  isRecurring           Boolean     @default(false)
+  recurringPattern      String?     @db.Text
+
+  // Metadata for flexible fields (JSON)
+  metadata              Json?
+
+  // Optimistic concurrency control
+  version               Int         @default(0)
+
+  // Timestamps
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  // Relations
+  stops                 OrderStop[]
+  items                 OrderItem[]
+  assignments           OrderAssignment[]
+  events                OrderEvent[]
+  evidences             OrderEvidence[]
+  pricing               OrderPricingSnapshot?
+
+  // Indexes
+  @@index([customerId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([scheduledAt])
+  @@index([customerId, status])
+  @@index([status, createdAt])
+  @@map("orders")
+}
+
+// OrderStop - waypoints for multi-stop orders
+model OrderStop {
+  id                String         @id @default(cuid())
+  orderId           String
+  order             Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Sequence for ordering waypoints
+  sequence          Int
+
+  // Location information
+  address           String
+  lat               Decimal        @db.Decimal(10, 8)
+  lng               Decimal        @db.Decimal(11, 8)
+
+  // Stop type (pickup or dropoff)
+  stopType          String         // "pickup" or "dropoff"
+
+  // Status tracking
+  status            WaypointStatus @default(PENDING)
+  arrivalTimestamp  DateTime?
+  departureTimestamp DateTime?
+
+  // Contact info at this location
+  contactName       String?
+  contactPhone      String?
+
+  // Instructions specific to this stop
+  instructions      String?        @db.Text
+
+  // Metadata
+  metadata          Json?
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@unique([orderId, sequence])
+  @@index([orderId])
+  @@index([lat, lng])
+  @@map("order_stops")
+}
+
+// OrderItem - items being moved
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Item details
+  name        String
+  description String?  @db.Text
+  quantity    Int      @default(1)
+
+  // Dimensions
+  lengthCm    Decimal? @db.Decimal(10, 2)
+  widthCm     Decimal? @db.Decimal(10, 2)
+  heightCm    Decimal? @db.Decimal(10, 2)
+  weightKg    Decimal? @db.Decimal(10, 2)
+
+  // Photos metadata (URLs or references)
+  photos      Json?    // Array of {url, checksum, uploadedAt}
+
+  // Special handling flags
+  isFragile   Boolean  @default(false)
+  isHeavy     Boolean  @default(false)
+
+  // Metadata
+  metadata    Json?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+// OrderAssignment - porter assignments and offers
+model OrderAssignment {
+  id                String           @id @default(cuid())
+  orderId           String
+  order             Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  porterId          String
+
+  // Assignment status and timestamps
+  status            AssignmentStatus @default(OFFERED)
+  offeredAt         DateTime         @default(now())
+  acceptedAt        DateTime?
+  rejectedAt        DateTime?
+  revokedAt         DateTime?
+  expiresAt         DateTime?
+
+  // Earnings breakdown for this porter
+  earningsCents     Int?
+  earningsBreakdown Json?            // {baseFare, distanceFee, timeFee, tips}
+
+  // Device/session metadata for tracking
+  deviceId          String?
+  sessionId         String?
+
+  // Rejection reason
+  rejectionReason   String?
+
+  // Metadata
+  metadata          Json?
+
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@unique([orderId, porterId])
+  @@index([orderId])
+  @@index([porterId])
+  @@index([status])
+  @@index([porterId, status])
+  @@map("order_assignments")
+}
+
+// OrderEvent - immutable audit trail
+model OrderEvent {
+  id            String         @id @default(cuid())
+  orderId       String
+  order         Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Event details
+  eventType     OrderEventType
+  payload       Json           // Full event data
+
+  // Actor who triggered the event
+  actorId       String?
+  actorType     String?        // "customer", "porter", "admin", "system"
+
+  // Location if applicable
+  lat           Decimal?       @db.Decimal(10, 8)
+  lng           Decimal?       @db.Decimal(11, 8)
+
+  // Correlation and tracing
+  correlationId String
+
+  // Timestamp (immutable)
+  createdAt     DateTime       @default(now())
+
+  @@index([orderId])
+  @@index([orderId, createdAt])
+  @@index([eventType])
+  @@index([correlationId])
+  @@map("order_events")
+}
+
+// OrderEvidence - photos and documentation
+model OrderEvidence {
+  id          String       @id @default(cuid())
+  orderId     String
+  order       Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Evidence type and metadata
+  type        EvidenceType
+  url         String
+  checksum    String?
+  mimeType    String?
+  sizeBytes   Int?
+
+  // Upload information
+  uploadedBy  String
+  uploadedAt  DateTime     @default(now())
+
+  // Optional description
+  description String?      @db.Text
+
+  // Metadata
+  metadata    Json?
+
+  createdAt   DateTime     @default(now())
+
+  @@index([orderId])
+  @@index([type])
+  @@map("order_evidences")
+}
+
+// OrderPricingSnapshot - immutable pricing breakdown
+model OrderPricingSnapshot {
+  id                  String   @id @default(cuid())
+  orderId             String   @unique
+  order               Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Price components (all in cents)
+  baseFareCents       Int
+  distanceFareCents   Int
+  timeFareCents       Int
+  porterFeesCents     Int
+  surgeMultiplier     Decimal  @db.Decimal(5, 2) @default(1.0)
+  taxCents            Int
+  discountCents       Int      @default(0)
+  totalCents          Int
+
+  // Distance and time estimates
+  estimatedDistanceKm Decimal? @db.Decimal(10, 2)
+  estimatedTimeMinutes Int?
+
+  // Pricing rules version
+  pricingVersion      String?
+
+  // Full pricing breakdown for transparency
+  breakdown           Json     // Complete pricing calculation details
+
+  createdAt           DateTime @default(now())
+
+  @@map("order_pricing_snapshots")
+}
+
+// Idempotency key tracking
+model IdempotencyKey {
+  id             String   @id
+  requestHash    String   @unique
+  response       Json
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+
+  @@index([expiresAt])
+  @@map("idempotency_keys")
+}
