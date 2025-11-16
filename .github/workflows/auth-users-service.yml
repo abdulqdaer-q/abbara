@@ -116,6 +116,7 @@ jobs:
           REDIS_URL: redis://localhost:6379
           JWT_ACCESS_SECRET: test-access-secret-32-chars-minimum-length
           JWT_REFRESH_SECRET: test-refresh-secret-32-chars-minimum-length
+          JWT_ALGORITHM: HS256
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
