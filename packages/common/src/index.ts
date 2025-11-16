@@ -150,10 +150,160 @@ export interface PaymentCompletedEvent extends BaseEvent {
 }
 
 /**
+ * Currency schema
+ */
+export const CurrencySchema = z.enum(['USD', 'EUR', 'GBP']);
+export type Currency = z.infer<typeof CurrencySchema>;
+
+/**
+ * Customer type schema
+ */
+export const CustomerTypeSchema = z.enum(['consumer', 'business', 'enterprise']);
+export type CustomerType = z.infer<typeof CustomerTypeSchema>;
+
+/**
+ * Item schema for pricing
+ */
+export const ItemSchema = z.object({
+  description: z.string(),
+  quantity: z.number().int().min(1),
+  weightKg: z.number().min(0).optional(),
+  lengthCm: z.number().min(0).optional(),
+  widthCm: z.number().min(0).optional(),
+  heightCm: z.number().min(0).optional(),
+});
+
+export type Item = z.infer<typeof ItemSchema>;
+
+/**
+ * Pricing estimate input schema
+ */
+export const PricingEstimateInputSchema = z.object({
+  pickup: LocationSchema,
+  dropoff: LocationSchema,
+  additionalStops: z.array(LocationSchema).optional(),
+  vehicleType: VehicleTypeSchema,
+  porterCount: z.number().int().min(0).max(10),
+  items: z.array(ItemSchema).optional(),
+  scheduledAt: z.date().optional(),
+  promoCode: z.string().optional(),
+  customerType: CustomerTypeSchema.optional().default('consumer'),
+  distanceMeters: z.number().int().min(0).optional(),
+  durationSeconds: z.number().int().min(0).optional(),
+});
+
+export type PricingEstimateInput = z.infer<typeof PricingEstimateInputSchema>;
+
+/**
+ * Price breakdown line item
+ */
+export const PriceBreakdownItemSchema = z.object({
+  type: z.string(),
+  ruleId: z.string().optional(),
+  amountCents: z.number().int(),
+  description: z.string(),
+});
+
+export type PriceBreakdownItem = z.infer<typeof PriceBreakdownItemSchema>;
+
+/**
+ * Applied rule reference
+ */
+export const AppliedRuleSchema = z.object({
+  ruleId: z.string(),
+  ruleVersion: z.number().int(),
+  ruleName: z.string(),
+  ruleType: z.string(),
+});
+
+export type AppliedRule = z.infer<typeof AppliedRuleSchema>;
+
+/**
+ * Pricing estimate output schema
+ */
+export const PricingEstimateOutputSchema = z.object({
+  // Breakdown in cents
+  baseFareCents: z.number().int().min(0),
+  distanceFareCents: z.number().int().min(0),
+  timeFareCents: z.number().int().min(0),
+  porterFeesCents: z.number().int().min(0),
+  surchargesCents: z.number().int().min(0),
+  subtotalCents: z.number().int().min(0),
+  discountCents: z.number().int().min(0),
+  taxCents: z.number().int().min(0),
+  serviceFeesCents: z.number().int().min(0),
+  totalCents: z.number().int().min(0),
+  currency: CurrencySchema,
+
+  // Detailed breakdown
+  breakdown: z.array(PriceBreakdownItemSchema),
+
+  // Rules applied
+  rulesApplied: z.array(AppliedRuleSchema),
+
+  // ETA and distance
+  estimatedDistanceMeters: z.number().int().min(0),
+  estimatedDurationSeconds: z.number().int().min(0),
+  estimatedArrivalTime: z.date().optional(),
+});
+
+export type PricingEstimateOutput = z.infer<typeof PricingEstimateOutputSchema>;
+
+/**
+ * Pricing snapshot schema
+ */
+export const PricingSnapshotSchema = z.object({
+  id: z.string(),
+  orderId: z.string(),
+  estimate: PricingEstimateOutputSchema,
+  capturedAt: z.date(),
+  rulesApplied: z.array(AppliedRuleSchema),
+});
+
+export type PricingSnapshot = z.infer<typeof PricingSnapshotSchema>;
+
+/**
+ * Pricing-related events
+ */
+export enum PricingEventType {
+  PRICING_RULES_CHANGED = 'pricing.rules.changed',
+  PRICE_SNAPSHOT_PERSISTED = 'pricing.snapshot.persisted',
+  PRICE_ESTIMATE_REQUESTED = 'pricing.estimate.requested',
+}
+
+export interface PricingRulesChangedEvent extends BaseEvent {
+  type: EventType.ORDER_CREATED;
+  ruleIds: string[];
+  changedBy: string;
+  changeType: 'created' | 'updated' | 'deleted' | 'activated' | 'deactivated';
+  effectiveAt: Date;
+}
+
+export interface PriceSnapshotPersistedEvent extends BaseEvent {
+  type: EventType.ORDER_CREATED;
+  snapshotId: string;
+  orderId: string;
+  totalCents: number;
+  currency: Currency;
+  vehicleType: VehicleType;
+}
+
+export interface PriceEstimateRequestedEvent extends BaseEvent {
+  type: EventType.ORDER_CREATED;
+  estimateId: string;
+  vehicleType: VehicleType;
+  distanceMeters: number;
+  totalCents: number;
+}
+
+/**
  * Event union type
  */
 export type DomainEvent =
   | OrderCreatedEvent
   | OrderAssignedEvent
   | OrderCompletedEvent
-  | PaymentCompletedEvent;
+  | PaymentCompletedEvent
+  | PricingRulesChangedEvent
+  | PriceSnapshotPersistedEvent
+  | PriceEstimateRequestedEvent;
