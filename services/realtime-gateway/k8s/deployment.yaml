@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: realtime-gateway
+  labels:
+    app: realtime-gateway
+    version: v1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: realtime-gateway
+  template:
+    metadata:
+      labels:
+        app: realtime-gateway
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: realtime-gateway
+        image: movenow/realtime-gateway:latest
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 3002
+          protocol: TCP
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3002"
+        - name: HOST
+          value: "0.0.0.0"
+        - name: CORS_ORIGIN
+          valueFrom:
+            configMapKeyRef:
+              name: realtime-gateway-config
+              key: CORS_ORIGIN
+        - name: JWT_ACCESS_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: realtime-gateway-secrets
+              key: JWT_ACCESS_SECRET
+        - name: JWT_SOCKET_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: realtime-gateway-secrets
+              key: JWT_SOCKET_SECRET
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: realtime-gateway-config
+              key: REDIS_HOST
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: realtime-gateway-config
+              key: REDIS_PORT
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: realtime-gateway-secrets
+              key: REDIS_PASSWORD
+        - name: KAFKA_BROKERS
+          valueFrom:
+            configMapKeyRef:
+              name: realtime-gateway-config
+              key: KAFKA_BROKERS
+        - name: KAFKA_CLIENT_ID
+          value: "realtime-gateway"
+        - name: KAFKA_GROUP_ID
+          value: "realtime-gateway-group"
+        - name: LOG_LEVEL
+          value: "info"
+        - name: METRICS_PORT
+          value: "9090"
+        - name: MAX_CONNECTIONS
+          value: "10000"
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 2000m
+            memory: 2Gi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3002
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3002
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - realtime-gateway
+              topologyKey: kubernetes.io/hostname
