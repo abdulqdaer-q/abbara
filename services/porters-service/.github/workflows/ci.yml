@@ -13,10 +13,6 @@ on:
       - 'services/porters-service/**'
       - 'packages/common/**'
 
-defaults:
-  run:
-    working-directory: services/porters-service
-
 jobs:
   lint-and-typecheck:
     name: Lint and Type Check
@@ -26,25 +22,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'pnpm'
 
-      - name: Install pnpm
-        run: npm install -g pnpm
-
-      - name: Install dependencies
+      - name: Install dependencies (root)
         run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
+        working-directory: services/porters-service
         run: pnpm prisma generate
 
       - name: Run ESLint
+        working-directory: services/porters-service
         run: pnpm lint
 
       - name: Run TypeScript type check
+        working-directory: services/porters-service
         run: pnpm type-check
 
   test:
@@ -80,49 +81,46 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'pnpm'
 
-      - name: Install pnpm
-        run: npm install -g pnpm
-
-      - name: Install dependencies
+      - name: Install dependencies (root)
         run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
+        working-directory: services/porters-service
         run: pnpm prisma generate
 
       - name: Run database migrations
+        working-directory: services/porters-service
         run: pnpm prisma migrate deploy
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/movenow_porters_test
 
-      - name: Run unit tests
-        run: pnpm test:unit
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/movenow_porters_test
-          REDIS_URL: redis://localhost:6379
-
-      - name: Run integration tests
-        run: pnpm test:integration
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/movenow_porters_test
-          REDIS_URL: redis://localhost:6379
-
-      - name: Generate coverage report
+      - name: Run all tests with coverage
+        working-directory: services/porters-service
         run: pnpm test:coverage
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/movenow_porters_test
           REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+          JWT_SECRET: test-secret-key
+          LOG_LEVEL: error
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          files: ./coverage/lcov.info
+          files: ./services/porters-service/coverage/lcov.info
           flags: porters-service
+          fail_ci_if_error: false
 
   build:
     name: Build Docker Image
