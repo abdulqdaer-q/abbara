@@ -212,6 +212,9 @@ importers:
       ioredis:
         specifier: ^5.3.2
         version: 5.8.2
+      jsonwebtoken:
+        specifier: ^9.0.2
+        version: 9.0.2
       kafkajs:
         specifier: ^2.2.4
         version: 2.2.4
@@ -243,6 +246,9 @@ importers:
       '@types/jest':
         specifier: ^29.5.11
         version: 29.5.14
+      '@types/jsonwebtoken':
+        specifier: ^9.0.5
+        version: 9.0.10
       '@types/node':
         specifier: ^20.10.6
         version: 20.19.25

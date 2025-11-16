@@ -140,6 +140,7 @@ export const ordersRouter = router({
         eventId: nanoid(),
         timestamp: new Date().toISOString(),
         correlationId,
+        version: '1.0',
         orderId: order.id,
         customerId: input.customerId,
         pickupSummary: {
@@ -355,6 +356,7 @@ export const ordersRouter = router({
         eventId: nanoid(),
         timestamp: new Date().toISOString(),
         correlationId: ctx.correlationId,
+        version: '1.0',
         orderId: input.orderId,
         customerId: order.customerId,
         changedFields: Object.keys(input).filter((k) => k !== 'idempotencyKey'),
@@ -440,6 +442,7 @@ export const ordersRouter = router({
         eventId: nanoid(),
         timestamp: new Date().toISOString(),
         correlationId: ctx.correlationId,
+        version: '1.0',
         orderId: input.orderId,
         customerId: order.customerId,
         cancelledBy: input.cancelledBy,

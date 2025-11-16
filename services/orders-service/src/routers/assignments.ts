@@ -90,6 +90,7 @@ export const assignmentsRouter = router({
               eventId: nanoid(),
               timestamp: new Date().toISOString(),
               correlationId: ctx.correlationId,
+              version: '1.0',
               orderId: input.orderId,
               porterId,
               offeredAt: new Date().toISOString(),
@@ -134,6 +135,7 @@ export const assignmentsRouter = router({
         eventId: nanoid(),
         timestamp: new Date().toISOString(),
         correlationId: ctx.correlationId,
+        version: '1.0',
         orderId: input.orderId,
         customerId: order.customerId,
         assignments: assignments.map((a) => ({
