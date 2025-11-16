@@ -2,7 +2,7 @@ import { inferAsyncReturnType } from '@trpc/server';
 import { CreateExpressContextOptions } from '@trpc/server/adapters/express';
 import { PrismaClient } from '@prisma/client';
 import { Repositories } from '../repositories';
-import { EventPublisher, getEventPublisher } from '../events/publisher';
+import { getEventPublisher } from '../events/publisher';
 import { extractToken } from '../middleware/auth';
 import { getOrCreateCorrelationId } from '../middleware/correlationId';
 import { logger } from '../utils/logger';

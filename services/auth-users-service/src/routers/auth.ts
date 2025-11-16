@@ -88,7 +88,7 @@ export const authRouter = router({
       });
 
       // Generate tokens
-      const { token: refreshToken, hash: refreshTokenHash } = generateTokenPair();
+      const { hash: refreshTokenHash } = generateTokenPair();
 
       // Store refresh token
       await ctx.repositories.refreshTokens.create({
@@ -186,7 +186,7 @@ export const authRouter = router({
       });
 
       // Generate tokens
-      const { token: refreshToken, hash: refreshTokenHash } = generateTokenPair();
+      const { hash: refreshTokenHash } = generateTokenPair();
 
       // Store refresh token
       await ctx.repositories.refreshTokens.create({
@@ -287,7 +287,7 @@ export const authRouter = router({
         });
 
         // Generate new tokens
-        const { token: newRefreshToken, hash: newRefreshTokenHash } = generateTokenPair();
+        const { hash: newRefreshTokenHash } = generateTokenPair();
 
         await ctx.repositories.refreshTokens.create({
           tokenHash: newRefreshTokenHash,

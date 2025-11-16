@@ -1,7 +1,6 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import { Context } from './context';
 import { authenticateUser, AuthContext } from '../middleware/auth';
-import { UserRole } from '@movenow/common';
 import { logger } from '../utils/logger';
 
 /**

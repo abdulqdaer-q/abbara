@@ -2,7 +2,6 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { router, authenticatedProcedure, adminProcedure, publicProcedure } from '../trpc/trpc';
 import { UserRoleSchema } from '@movenow/common';
-import { requireSelfOrAdmin } from '../middleware/rbac';
 import { createUserUpdatedEvent } from '../events/helpers';
 import { logger } from '../utils/logger';
 
