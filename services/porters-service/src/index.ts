@@ -112,7 +112,7 @@ async function main() {
   // Start metrics server on separate port
   if (METRICS_PORT !== PORT) {
     const metricsApp = express();
-    metricsApp.get('/metrics', async (req, res) => {
+    metricsApp.get('/metrics', async (_req, res) => {
       res.setHeader('Content-Type', metricsRegister.contentType);
       const metrics = await metricsRegister.metrics();
       res.send(metrics);
