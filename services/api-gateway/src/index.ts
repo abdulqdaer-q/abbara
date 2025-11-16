@@ -34,7 +34,7 @@ async function bootstrap() {
   app.use(correlationMiddleware);
 
   // Health check endpoint (no rate limiting)
-  app.get('/health', (req, res) => {
+  app.get('/health', (_req, res) => {
     res.json({
       status: 'healthy',
       service: config.serviceName,
@@ -43,7 +43,7 @@ async function bootstrap() {
   });
 
   // Readiness probe (checks if service can connect to dependencies)
-  app.get('/ready', async (req, res) => {
+  app.get('/ready', async (_req, res) => {
     // In production, check connectivity to downstream services
     try {
       res.json({
