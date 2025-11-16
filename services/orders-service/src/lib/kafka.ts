@@ -13,7 +13,7 @@ class KafkaClient {
   private producer: Producer | null = null;
   private connected = false;
 
-  constructor(private config: KafkaConfig) {
+  constructor(config: KafkaConfig) {
     this.kafka = new Kafka({
       clientId: config.clientId,
       brokers: config.brokers,

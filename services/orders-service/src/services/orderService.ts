@@ -153,6 +153,7 @@ export const changeOrderStatus = async (
       eventId: nanoid(),
       timestamp: new Date().toISOString(),
       correlationId,
+      version: '1.0',
       orderId,
       customerId: order.customerId,
       previousStatus: previousStatus as any,

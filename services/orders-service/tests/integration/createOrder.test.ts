@@ -1,5 +1,5 @@
 import { prisma } from '../../src/lib/prisma';
-import { CreateOrderInput } from '@movenow/common';
+import type { CreateOrderInput } from '@movenow/common';
 
 describe('CreateOrder Integration Tests', () => {
   it('should create a basic order with stops and items', async () => {
