@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
+import { VerificationStatus } from '@prisma/client';
 import { router, authenticatedProcedure, porterProcedure, adminProcedure } from '../trpc/trpc';
 import { VerificationStatusSchema } from '@movenow/common';
 import {
@@ -65,8 +66,6 @@ export const portersRouter = router({
         createPorterVerificationRequestedEvent({
           userId,
           porterId: porterProfile.id,
-          documentTypes: input.documents.map((d) => d.type),
-          requestedAt: new Date(),
           correlationId: ctx.correlationId,
         })
       );
@@ -176,7 +175,7 @@ export const portersRouter = router({
       const { status, skip, take } = input;
 
       const porterProfiles = await ctx.repositories.porterProfiles.listByStatus(
-        status,
+        status as VerificationStatus,
         skip,
         take
       );
@@ -230,7 +229,7 @@ export const portersRouter = router({
 
       const updatedProfile = await ctx.repositories.porterProfiles.updateVerificationStatus(
         userId,
-        status,
+        status as VerificationStatus,
         rejectionReason
       );
 
@@ -248,8 +247,7 @@ export const portersRouter = router({
         createPorterVerifiedEvent({
           userId,
           porterId: porterProfile.id,
-          verificationStatus: status,
-          verifiedAt: new Date(),
+          verifiedBy: ctx.auth.user.userId,
           correlationId: ctx.correlationId,
         })
       );

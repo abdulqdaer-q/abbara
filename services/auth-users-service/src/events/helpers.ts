@@ -56,16 +56,12 @@ export function createUserUpdatedEvent(params: {
 export function createPorterVerificationRequestedEvent(params: {
   userId: string;
   porterId: string;
-  documentTypes: string[];
-  requestedAt: Date;
   correlationId: string;
 }): PorterVerificationRequestedEvent {
   return {
     type: EventType.PORTER_VERIFICATION_REQUESTED,
     userId: params.userId,
     porterId: params.porterId,
-    documentTypes: params.documentTypes,
-    requestedAt: params.requestedAt,
     timestamp: new Date(),
     correlationId: params.correlationId,
   };
@@ -77,16 +73,14 @@ export function createPorterVerificationRequestedEvent(params: {
 export function createPorterVerifiedEvent(params: {
   userId: string;
   porterId: string;
-  verificationStatus: VerificationStatus;
-  verifiedAt: Date;
+  verifiedBy: string;
   correlationId: string;
 }): PorterVerifiedEvent {
   return {
     type: EventType.PORTER_VERIFIED,
     userId: params.userId,
     porterId: params.porterId,
-    verificationStatus: params.verificationStatus,
-    verifiedAt: params.verifiedAt,
+    verifiedBy: params.verifiedBy,
     timestamp: new Date(),
     correlationId: params.correlationId,
   };
