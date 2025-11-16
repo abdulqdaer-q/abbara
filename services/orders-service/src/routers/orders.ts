@@ -1,7 +1,7 @@
 import { router, publicProcedure } from '../trpc';
 import { prisma } from '../lib/prisma';
 import { getKafkaClient } from '../lib/kafka';
-import { requireAuth, requireCustomer, requireAdmin } from '../middleware/auth';
+import { requireAuth, requireCustomer } from '../middleware/auth';
 import { idempotency } from '../middleware/idempotency';
 import {
   CreateOrderInputSchema,
@@ -18,7 +18,6 @@ import {
   OrderEventType,
 } from '@movenow/common';
 import { nanoid } from 'nanoid';
-import { z } from 'zod';
 import {
   OrderNotFoundError,
   OrderUpdateNotAllowedError,
@@ -192,7 +191,7 @@ export const ordersRouter = router({
   get: publicProcedure
     .use(requireAuth)
     .input(GetOrderInputSchema)
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       // Verify access
       await verifyOrderAccess(
         input.orderId,

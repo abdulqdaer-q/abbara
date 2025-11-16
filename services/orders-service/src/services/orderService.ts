@@ -8,14 +8,11 @@ import {
   UnauthorizedOrderAccessError,
 } from '../lib/errors';
 import {
-  OrderCreatedEvent,
   OrderStatusChangedEvent,
-  OrderUpdatedEvent,
   OrderEventType,
 } from '@movenow/common';
 import { nanoid } from 'nanoid';
 import {
-  orderCreatedCounter,
   orderStatusChangedCounter,
   eventPublishedCounter,
 } from '../lib/metrics';
@@ -120,7 +117,7 @@ export const changeOrderStatus = async (
 
   try {
     // Update order with optimistic concurrency control
-    const updatedOrder = await prisma.order.update({
+    await prisma.order.update({
       where: {
         id: orderId,
         version: order.version, // Optimistic locking

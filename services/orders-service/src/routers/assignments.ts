@@ -11,7 +11,6 @@ import {
 import {
   OrderAssignedEvent,
   PorterOfferedEvent,
-  PorterOfferExpiredEvent,
   OrderEventType,
 } from '@movenow/common';
 import { nanoid } from 'nanoid';
