@@ -11,7 +11,6 @@ const t = initTRPC.context<Context>().create({
     logger.error('tRPC error', {
       code: error.code,
       message: error.message,
-      path: shape.path,
     });
 
     return {

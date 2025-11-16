@@ -70,7 +70,7 @@ export class PorterProfileRepository {
     status: VerificationStatus,
     skip: number = 0,
     take: number = 20
-  ): Promise<PorterProfile[]> {
+  ) {
     return this.prisma.porterProfile.findMany({
       where: { verificationStatus: status },
       include: { user: true },
@@ -132,7 +132,7 @@ export class PorterProfileRepository {
     skip: number = 0,
     take: number = 20,
     minRating?: number
-  ): Promise<PorterProfile[]> {
+  ) {
     return this.prisma.porterProfile.findMany({
       where: {
         verificationStatus: 'VERIFIED',

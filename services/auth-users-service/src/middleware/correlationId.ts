@@ -19,7 +19,7 @@ export function getOrCreateCorrelationId(headerValue?: string): string {
  * Attach correlation ID to logger context
  */
 export function withCorrelationId<T>(
-  correlationId: string,
+  _correlationId: string,
   fn: () => T
 ): T {
   // In a production environment, you might use AsyncLocalStorage
