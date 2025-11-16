@@ -37,10 +37,22 @@ export const PaymentMethodSchema = z.enum(['card', 'wallet', 'cash']);
 export type PaymentMethod = z.infer<typeof PaymentMethodSchema>;
 
 /**
- * User role
+ * User role - Updated to match auth service requirements
  */
-export const UserRoleSchema = z.enum(['client', 'porter', 'admin', 'superadmin']);
+export const UserRoleSchema = z.enum(['CUSTOMER', 'PORTER', 'ADMIN']);
 export type UserRole = z.infer<typeof UserRoleSchema>;
+
+/**
+ * Porter verification status
+ */
+export const VerificationStatusSchema = z.enum([
+  'PENDING',
+  'UNDER_REVIEW',
+  'VERIFIED',
+  'REJECTED',
+  'RESUBMIT_REQUIRED',
+]);
+export type VerificationStatus = z.infer<typeof VerificationStatusSchema>;
 
 /**
  * Create Order Input Schema
@@ -90,18 +102,6 @@ export const PorterSummarySchema = z.object({
 });
 
 export type PorterSummary = z.infer<typeof PorterSummarySchema>;
-
-/**
- * Verification Status
- */
-export const VerificationStatusSchema = z.enum([
-  'pending',
-  'under_review',
-  'verified',
-  'rejected',
-  'resubmit_required',
-]);
-export type VerificationStatus = z.infer<typeof VerificationStatusSchema>;
 
 /**
  * Porter Profile Schema
@@ -157,6 +157,10 @@ export enum EventType {
   PORTER_COMPLETED_JOB = 'porter.completed.job',
   PORTER_SUSPENDED = 'porter.suspended',
   PORTER_UNSUSPENDED = 'porter.unsuspended',
+
+  // User events
+  USER_CREATED = 'user.created',
+  USER_UPDATED = 'user.updated',
 }
 
 export interface BaseEvent {
@@ -166,7 +170,7 @@ export interface BaseEvent {
   userId?: string;
 }
 
-export interface OrderCreatedEvent extends BaseEvent {
+export interface LegacyOrderCreatedEvent extends BaseEvent {
   type: EventType.ORDER_CREATED;
   orderId: string;
   userId: string;
@@ -177,14 +181,14 @@ export interface OrderCreatedEvent extends BaseEvent {
   priceCents: number;
 }
 
-export interface OrderAssignedEvent extends BaseEvent {
+export interface LegacyOrderAssignedEvent extends BaseEvent {
   type: EventType.ORDER_ASSIGNED;
   orderId: string;
   porterId: string;
   userId: string;
 }
 
-export interface OrderCompletedEvent extends BaseEvent {
+export interface LegacyOrderCompletedEvent extends BaseEvent {
   type: EventType.ORDER_COMPLETED;
   orderId: string;
   userId: string;
@@ -317,12 +321,31 @@ export interface PorterUnsuspendedEvent extends BaseEvent {
 }
 
 /**
- * Event union type
+ * User and Auth Events
+ */
+export interface UserCreatedEvent extends BaseEvent {
+  type: EventType.USER_CREATED;
+  userId: string;
+  email?: string;
+  phone?: string;
+  role: UserRole;
+  createdAt: Date;
+}
+
+export interface UserUpdatedEvent extends BaseEvent {
+  type: EventType.USER_UPDATED;
+  userId: string;
+  updatedFields: string[];
+  updatedAt: Date;
+}
+
+/**
+ * Event union type (includes legacy and new events for backward compatibility)
  */
 export type DomainEvent =
-  | OrderCreatedEvent
-  | OrderAssignedEvent
-  | OrderCompletedEvent
+  | LegacyOrderCreatedEvent
+  | LegacyOrderAssignedEvent
+  | LegacyOrderCompletedEvent
   | PaymentCompletedEvent
   | PaymentPayoutProcessedEvent
   | PorterRegisteredEvent
@@ -338,4 +361,11 @@ export type DomainEvent =
   | PorterRejectedJobEvent
   | PorterCompletedJobEvent
   | PorterSuspendedEvent
-  | PorterUnsuspendedEvent;
+  | PorterUnsuspendedEvent
+  | UserCreatedEvent
+  | UserUpdatedEvent;
+
+// Export all new order-related types, schemas, and events
+export * from './types/orders';
+export * from './events/orders';
+export * from './schemas/orders';

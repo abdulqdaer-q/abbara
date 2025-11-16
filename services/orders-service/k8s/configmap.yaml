@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orders-service-config
+data:
+  redis-url: "redis://redis-service:6379"
+  kafka-brokers: "kafka-service:9092"
+  pricing-service-url: "http://pricing-service:4002/trpc"
+  payments-service-url: "http://payments-service:4003/trpc"

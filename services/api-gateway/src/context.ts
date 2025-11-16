@@ -66,7 +66,7 @@ function parseAuthToken(authHeader?: string): User | null {
  */
 export async function createContext({
   req,
-  res,
+  res: _res,
 }: CreateExpressContextOptions): Promise<Context> {
   // Extract correlation ID
   const correlationId = getCorrelationId(req);
