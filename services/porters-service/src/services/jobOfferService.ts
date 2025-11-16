@@ -11,7 +11,6 @@ import { getKafkaClient } from '../lib/kafka';
 import {
   EventType,
   PorterOfferCreatedEvent,
-  PorterOfferExpiredEvent,
   PorterAcceptedJobEvent,
   PorterRejectedJobEvent,
 } from '@movenow/common';

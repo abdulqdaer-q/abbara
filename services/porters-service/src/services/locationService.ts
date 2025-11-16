@@ -119,7 +119,7 @@ export class LocationService {
     lat: number,
     lng: number,
     radiusMeters: number,
-    onlineOnly = true
+    _onlineOnly = true
   ): Promise<Array<{ porterId: string; distance: number; location: LocationData }>> {
     const redis = getLocationRedis();
 
