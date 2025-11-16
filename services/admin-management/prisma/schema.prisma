@@ -1,0 +1,246 @@
+// Prisma schema for Admin Management Service
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Admin User Model
+model AdminUser {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String   // Hashed password
+  role      AdminRole @default(ADMIN)
+  status    AdminStatus @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastLogin DateTime?
+
+  // Relations
+  auditLogs      AuditLog[]
+  promoCodes     PromoCode[]
+  settingUpdates PlatformSetting[]
+
+  @@index([email])
+  @@index([role])
+  @@index([status])
+  @@map("admin_users")
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  OPERATIONS
+  FINANCE
+  SUPPORT
+}
+
+enum AdminStatus {
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+}
+
+// Audit Log Model - Immutable record of all admin actions
+model AuditLog {
+  id               String   @id @default(uuid())
+  actorId          String
+  targetEntityType String
+  targetEntityId   String
+  action           String
+  oldValue         Json?
+  newValue         Json?
+  timestamp        DateTime @default(now())
+  correlationId    String
+  ipAddress        String?
+  userAgent        String?
+
+  // Relations
+  actor AdminUser @relation(fields: [actorId], references: [id])
+
+  @@index([actorId])
+  @@index([targetEntityType, targetEntityId])
+  @@index([timestamp])
+  @@index([correlationId])
+  @@map("audit_logs")
+}
+
+// Vehicle Type Model
+model VehicleType {
+  id                String   @id @default(uuid())
+  name              String   @unique
+  description       String?
+  maxLoadKg         Int
+  pricingMultiplier Float    @default(1.0)
+  status            VehicleTypeStatus @default(ACTIVE)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  version           Int      @default(1) // For optimistic locking
+
+  @@index([status])
+  @@map("vehicle_types")
+}
+
+enum VehicleTypeStatus {
+  ACTIVE
+  INACTIVE
+  DEPRECATED
+}
+
+// Promo Code Model
+model PromoCode {
+  id            String   @id @default(uuid())
+  code          String   @unique
+  discountType  DiscountType
+  discountValue Float
+  usageLimit    Int?
+  usageCount    Int      @default(0)
+  eligibleRoles String[] // Array of user roles
+  startDate     DateTime
+  endDate       DateTime
+  status        PromoCodeStatus @default(ACTIVE)
+  createdBy     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  version       Int      @default(1) // For optimistic locking
+
+  // Relations
+  creator AdminUser @relation(fields: [createdBy], references: [id])
+
+  @@index([code])
+  @@index([status])
+  @@index([startDate, endDate])
+  @@map("promo_codes")
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum PromoCodeStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+}
+
+// Platform Settings Model
+model PlatformSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String
+  description String?
+  updatedBy   String
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  version     Int      @default(1) // For optimistic locking
+
+  // Relations
+  updater AdminUser @relation(fields: [updatedBy], references: [id])
+
+  @@index([key])
+  @@map("platform_settings")
+}
+
+// User Management (shadow table for admin operations)
+// This is a read-only view/cache of users from the User service
+model User {
+  id                String   @id
+  email             String   @unique
+  name              String
+  role              UserRole
+  status            UserStatus
+  verificationStatus VerificationStatus @default(PENDING)
+  createdAt         DateTime
+  updatedAt         DateTime
+  lastActiveAt      DateTime?
+  walletBalance     Int      @default(0) // in cents
+
+  @@index([email])
+  @@index([role])
+  @@index([status])
+  @@index([verificationStatus])
+  @@map("users")
+}
+
+enum UserRole {
+  CLIENT
+  PORTER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+  DELETED
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  RESUBMITTED
+}
+
+// Porter Document Verification
+model PorterDocument {
+  id             String   @id @default(uuid())
+  porterId       String
+  documentType   DocumentType
+  documentUrl    String
+  status         VerificationStatus @default(PENDING)
+  reviewedBy     String?
+  reviewNotes    String?
+  submittedAt    DateTime @default(now())
+  reviewedAt     DateTime?
+
+  @@index([porterId])
+  @@index([status])
+  @@map("porter_documents")
+}
+
+enum DocumentType {
+  DRIVERS_LICENSE
+  VEHICLE_REGISTRATION
+  INSURANCE
+  BACKGROUND_CHECK
+  PROFILE_PHOTO
+}
+
+// Order Management (shadow table for admin oversight)
+model Order {
+  id            String   @id
+  userId        String
+  status        OrderStatus
+  pickupAddress String
+  dropoffAddress String
+  vehicleType   String
+  porterCount   Int
+  priceCents    Int
+  assignedPorters String[] // Array of porter IDs
+  scheduledAt   DateTime?
+  createdAt     DateTime
+  updatedAt     DateTime
+  completedAt   DateTime?
+  cancelledAt   DateTime?
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
