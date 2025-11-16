@@ -28,11 +28,11 @@ describe('Orders Router', () => {
         auth: {} as any,
         orders: {
           createOrder: {
-            mutate: jest.fn().mockResolvedValue({ orderId: 'order-456' }),
+            mutate: jest.fn().mockResolvedValue({ orderId: '550e8400-e29b-41d4-a716-446655440000' }),
           },
           getOrder: {
             query: jest.fn().mockResolvedValue({
-              id: 'order-456',
+              id: '550e8400-e29b-41d4-a716-446655440000',
               userId: 'user-123',
               status: 'pending',
               pickup: { address: '123 Main St', lat: 40.7128, lng: -74.006 },
@@ -116,7 +116,7 @@ describe('Orders Router', () => {
 
       // Assert result contains orderId
       expect(result).toEqual({
-        orderId: 'order-456',
+        orderId: '550e8400-e29b-41d4-a716-446655440000',
         priceCents: 5000,
         estimatedDuration: 1800,
       });
@@ -140,7 +140,7 @@ describe('Orders Router', () => {
 
       (ctx.services.orders.createOrder.mutate as jest.Mock).mockImplementation(async () => {
         callOrder.push('orders');
-        return { orderId: 'order-456' };
+        return { orderId: '550e8400-e29b-41d4-a716-446655440000' };
       });
 
       await caller.orders.create({
@@ -174,17 +174,17 @@ describe('Orders Router', () => {
       const ctx = createMockContext();
       const caller = appRouter.createCaller(ctx);
 
-      const result = await caller.orders.get('order-456');
+      const result = await caller.orders.get('550e8400-e29b-41d4-a716-446655440000');
 
-      expect(ctx.services.orders.getOrder.query).toHaveBeenCalledWith('order-456');
-      expect(result.id).toBe('order-456');
+      expect(ctx.services.orders.getOrder.query).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440000');
+      expect(result.id).toBe('550e8400-e29b-41d4-a716-446655440000');
       expect(result.userId).toBe('user-123');
     });
 
     it('should reject access to other users orders', async () => {
       const ctx = createMockContext();
       (ctx.services.orders.getOrder.query as jest.Mock).mockResolvedValue({
-        id: 'order-456',
+        id: '550e8400-e29b-41d4-a716-446655440000',
         userId: 'different-user-id',
         status: 'pending',
         pickup: { address: '123 Main St', lat: 40.7128, lng: -74.006 },
@@ -198,7 +198,7 @@ describe('Orders Router', () => {
 
       const caller = appRouter.createCaller(ctx);
 
-      await expect(caller.orders.get('order-456')).rejects.toThrow(
+      await expect(caller.orders.get('550e8400-e29b-41d4-a716-446655440000')).rejects.toThrow(
         'You do not have access to this order'
       );
     });
@@ -210,12 +210,12 @@ describe('Orders Router', () => {
       const caller = appRouter.createCaller(ctx);
 
       const result = await caller.orders.cancel({
-        orderId: 'order-456',
+        orderId: '550e8400-e29b-41d4-a716-446655440000',
         reason: 'Changed my mind',
       });
 
       expect(ctx.services.orders.cancelOrder.mutate).toHaveBeenCalledWith({
-        orderId: 'order-456',
+        orderId: '550e8400-e29b-41d4-a716-446655440000',
         userId: 'user-123',
         reason: 'Changed my mind',
       });

@@ -6,12 +6,6 @@ import { createLogger } from './lib/logger';
 import {
   createInternalTRPCClient,
   ServiceClients,
-  AuthServiceRouter,
-  OrdersServiceRouter,
-  PricingServiceRouter,
-  PortersServiceRouter,
-  PaymentsServiceRouter,
-  NotificationsServiceRouter,
 } from './lib/trpcClientFactory';
 import { Logger } from 'winston';
 
@@ -80,27 +74,27 @@ export async function createContext({
 
   // Create internal service clients with correlation ID
   const services: ServiceClients = {
-    auth: createInternalTRPCClient<AuthServiceRouter>(
+    auth: createInternalTRPCClient<any>(
       config.services.auth,
       correlationId
     ),
-    orders: createInternalTRPCClient<OrdersServiceRouter>(
+    orders: createInternalTRPCClient<any>(
       config.services.orders,
       correlationId
     ),
-    pricing: createInternalTRPCClient<PricingServiceRouter>(
+    pricing: createInternalTRPCClient<any>(
       config.services.pricing,
       correlationId
     ),
-    porters: createInternalTRPCClient<PortersServiceRouter>(
+    porters: createInternalTRPCClient<any>(
       config.services.porters,
       correlationId
     ),
-    payments: createInternalTRPCClient<PaymentsServiceRouter>(
+    payments: createInternalTRPCClient<any>(
       config.services.payments,
       correlationId
     ),
-    notifications: createInternalTRPCClient<NotificationsServiceRouter>(
+    notifications: createInternalTRPCClient<any>(
       config.services.notifications,
       correlationId
     ),

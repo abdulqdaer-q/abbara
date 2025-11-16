@@ -19,8 +19,10 @@ enum UserRole {
 
 enum VerificationStatus {
   PENDING
+  UNDER_REVIEW
   VERIFIED
   REJECTED
+  RESUBMIT_REQUIRED
 }
 
 // User model - Core user entity
