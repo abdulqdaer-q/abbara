@@ -7,7 +7,7 @@ module.exports = {
     '^.+\\.(ts|tsx|js|jsx)$': 'ts-jest',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(superjson|copy-anything|is-what)/)',
+    'node_modules/(?!(superjson|copy-anything|is-what))',
   ],
   collectCoverageFrom: [
     'src/**/*.ts',
