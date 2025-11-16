@@ -2,6 +2,13 @@ import { inferAsyncReturnType } from '@trpc/server';
 import { CreateExpressContextOptions } from '@trpc/server/adapters/express';
 import { generateCorrelationId } from './lib/correlation';
 
+export interface User {
+  userId: string;
+  role: 'customer' | 'porter' | 'admin' | 'system';
+  email?: string;
+  phone?: string;
+}
+
 /**
  * Create context for tRPC requests
  */
@@ -18,6 +25,7 @@ export const createContext = ({ req, res }: CreateExpressContextOptions) => {
     res,
     token,
     correlationId,
+    user: undefined as User | undefined,
   };
 };
 
