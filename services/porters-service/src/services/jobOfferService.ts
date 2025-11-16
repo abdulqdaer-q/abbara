@@ -34,7 +34,7 @@ export class JobOfferService {
   async createOffer(
     orderId: string,
     porterId: string,
-    userId: string,
+    _userId: string,
     metadata?: Record<string, unknown>
   ) {
     // Check concurrent offers limit

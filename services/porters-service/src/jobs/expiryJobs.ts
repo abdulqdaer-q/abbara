@@ -36,6 +36,7 @@ export const periodicWorker = new Worker(
 
         default:
           logger.warn('Unknown job type', { jobName: job.name });
+          return { skipped: true };
       }
     } catch (error) {
       logger.error('Error processing periodic job', {

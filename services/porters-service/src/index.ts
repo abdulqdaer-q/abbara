@@ -58,11 +58,11 @@ async function main() {
   app.use(express.json());
 
   // Health check endpoints
-  app.get('/health', (req, res) => {
+  app.get('/health', (_req, res) => {
     res.json({ status: 'ok', service: 'porters-service' });
   });
 
-  app.get('/health/ready', async (req, res) => {
+  app.get('/health/ready', async (_req, res) => {
     // Check if all dependencies are ready
     try {
       // Could add more checks here (DB, Redis, Kafka)
@@ -72,12 +72,12 @@ async function main() {
     }
   });
 
-  app.get('/health/live', (req, res) => {
+  app.get('/health/live', (_req, res) => {
     res.json({ status: 'alive' });
   });
 
   // Metrics endpoint
-  app.get('/metrics', async (req, res) => {
+  app.get('/metrics', async (_req, res) => {
     res.setHeader('Content-Type', metricsRegister.contentType);
     const metrics = await metricsRegister.metrics();
     res.send(metrics);

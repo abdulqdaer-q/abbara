@@ -16,10 +16,7 @@ export class AppError extends Error {
       | 'PAYLOAD_TOO_LARGE'
       | 'UNPROCESSABLE_CONTENT'
       | 'TOO_MANY_REQUESTS'
-      | 'INTERNAL_SERVER_ERROR'
-      | 'BAD_GATEWAY'
-      | 'SERVICE_UNAVAILABLE'
-      | 'GATEWAY_TIMEOUT',
+      | 'INTERNAL_SERVER_ERROR',
     public details?: Record<string, unknown>
   ) {
     super(message);
@@ -60,7 +57,7 @@ export function throwServiceUnavailable(
   service: string,
   details?: Record<string, unknown>
 ): never {
-  throw new AppError(`${service} service unavailable`, 'SERVICE_UNAVAILABLE', details);
+  throw new AppError(`${service} service unavailable`, 'INTERNAL_SERVER_ERROR', details);
 }
 
 export function throwTooManyRequests(message = 'Too many requests'): never {
