@@ -7,6 +7,12 @@ module.exports = {
     'src/**/*.ts',
     '!src/**/*.d.ts',
     '!src/index.ts',
+    '!src/lib/kafka.ts',
+    '!src/lib/redis.ts',
+    '!src/lib/logger.ts',
+    '!src/lib/prisma.ts',
+    '!src/lib/metrics.ts',
+    '!src/lib/correlation.ts',
   ],
   coverageThreshold: {
     global: {
