@@ -499,7 +499,7 @@ describe('Waypoints and Evidence Integration Tests', () => {
       });
 
       // Upload pre-move evidence
-      await prisma.orderEvidence.create({
+      const preMoveEvidence = await prisma.orderEvidence.create({
         data: {
           orderId: order.id,
           type: EvidenceType.PRE_MOVE,
@@ -507,6 +507,7 @@ describe('Waypoints and Evidence Integration Tests', () => {
           uploadedBy: 'porter-456',
         },
       });
+      expect(preMoveEvidence.id).toBeDefined();
 
       // Complete pickup
       await prisma.orderStop.update({
@@ -528,7 +529,7 @@ describe('Waypoints and Evidence Integration Tests', () => {
       });
 
       // Upload post-move evidence
-      await prisma.orderEvidence.create({
+      const postMoveEvidence = await prisma.orderEvidence.create({
         data: {
           orderId: order.id,
           type: EvidenceType.POST_MOVE,
@@ -536,9 +537,10 @@ describe('Waypoints and Evidence Integration Tests', () => {
           uploadedBy: 'porter-456',
         },
       });
+      expect(postMoveEvidence.id).toBeDefined();
 
       // Get signature
-      await prisma.orderEvidence.create({
+      const signatureEvidence = await prisma.orderEvidence.create({
         data: {
           orderId: order.id,
           type: EvidenceType.SIGNATURE,
@@ -546,6 +548,13 @@ describe('Waypoints and Evidence Integration Tests', () => {
           uploadedBy: 'porter-456',
         },
       });
+      expect(signatureEvidence.id).toBeDefined();
+
+      // Verify all evidences exist before proceeding
+      const evidenceCheck = await prisma.orderEvidence.findMany({
+        where: { orderId: order.id },
+      });
+      expect(evidenceCheck).toHaveLength(3);
 
       // Complete delivery
       await prisma.orderStop.update({
