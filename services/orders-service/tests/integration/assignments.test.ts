@@ -16,6 +16,36 @@ describe('Assignment Workflows Integration Tests', () => {
     jest.clearAllMocks();
   });
 
+  describe('Assignment with Device Tracking', () => {
+    it('should store device and session info for porter', async () => {
+      const order = await prisma.order.create({
+        data: {
+          customerId: 'customer-123',
+          status: OrderStatus.CREATED,
+          priceCents: 5000,
+          currency: 'USD',
+          porterCountRequested: 1,
+          vehicleType: 'sedan',
+        },
+      });
+
+      const assignment = await prisma.orderAssignment.create({
+        data: {
+          orderId: order.id,
+          porterId: 'porter-999',
+          status: AssignmentStatus.ACCEPTED,
+          offeredAt: new Date(),
+          acceptedAt: new Date(),
+          deviceId: 'device-abc123',
+          sessionId: 'session-xyz789',
+        },
+      });
+
+      expect(assignment.deviceId).toBe('device-abc123');
+      expect(assignment.sessionId).toBe('session-xyz789');
+    });
+  });
+
   describe('Direct Assignment', () => {
     it('should directly assign porter to order', async () => {
       const order = await prisma.order.create({
@@ -371,36 +401,6 @@ describe('Assignment Workflows Integration Tests', () => {
         baseFare: 3000,
         distanceFee: 800,
       });
-    });
-  });
-
-  describe('Assignment with Device Tracking', () => {
-    it('should store device and session info for porter', async () => {
-      const order = await prisma.order.create({
-        data: {
-          customerId: 'customer-123',
-          status: OrderStatus.CREATED,
-          priceCents: 5000,
-          currency: 'USD',
-          porterCountRequested: 1,
-          vehicleType: 'sedan',
-        },
-      });
-
-      const assignment = await prisma.orderAssignment.create({
-        data: {
-          orderId: order.id,
-          porterId: 'porter-999',
-          status: AssignmentStatus.ACCEPTED,
-          offeredAt: new Date(),
-          acceptedAt: new Date(),
-          deviceId: 'device-abc123',
-          sessionId: 'session-xyz789',
-        },
-      });
-
-      expect(assignment.deviceId).toBe('device-abc123');
-      expect(assignment.sessionId).toBe('session-xyz789');
     });
   });
 });
