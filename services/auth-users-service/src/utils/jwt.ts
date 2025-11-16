@@ -28,7 +28,7 @@ export function signAccessToken(payload: Omit<AccessTokenPayload, 'type'>): stri
   const options: SignOptions = {
     expiresIn: config.JWT_ACCESS_EXPIRY,
     algorithm: config.JWT_ALGORITHM,
-  };
+  } as SignOptions;
 
   const secret = config.JWT_ALGORITHM === 'RS256'
     ? config.JWT_PRIVATE_KEY || config.JWT_ACCESS_SECRET
@@ -70,7 +70,7 @@ export function signRefreshToken(payload: Omit<RefreshTokenPayload, 'type'>): st
   const options: SignOptions = {
     expiresIn: config.JWT_REFRESH_EXPIRY,
     algorithm: 'HS256', // Always use HS256 for refresh tokens
-  };
+  } as SignOptions;
 
   return jwt.sign(tokenPayload, config.JWT_REFRESH_SECRET, options);
 }

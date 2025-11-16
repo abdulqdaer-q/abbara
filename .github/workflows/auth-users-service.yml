@@ -37,7 +37,14 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          pnpm config set enable-pre-post-scripts true
+          pnpm install --frozen-lockfile
+        env:
+          PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING: 1
+
+      - name: Build common package
+        run: pnpm --filter @movenow/common build
 
       - name: Run linter
         run: pnpm --filter @movenow/auth-users-service lint
@@ -86,11 +93,20 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          pnpm config set enable-pre-post-scripts true
+          pnpm install --frozen-lockfile
+        env:
+          PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING: 1
+
+      - name: Build common package
+        run: pnpm --filter @movenow/common build
 
       - name: Generate Prisma client
         working-directory: ${{ env.SERVICE_PATH }}
         run: pnpm prisma:generate
+        env:
+          PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING: 1
 
       - name: Run tests
         working-directory: ${{ env.SERVICE_PATH }}
@@ -127,11 +143,20 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          pnpm config set enable-pre-post-scripts true
+          pnpm install --frozen-lockfile
+        env:
+          PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING: 1
+
+      - name: Build common package
+        run: pnpm --filter @movenow/common build
 
       - name: Generate Prisma client
         working-directory: ${{ env.SERVICE_PATH }}
         run: pnpm prisma:generate
+        env:
+          PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING: 1
 
       - name: Build service
         run: pnpm --filter @movenow/auth-users-service build
