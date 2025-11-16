@@ -1,0 +1,177 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: porters-service
+  labels:
+    app: porters-service
+    version: v1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: porters-service
+  template:
+    metadata:
+      labels:
+        app: porters-service
+        version: v1
+    spec:
+      containers:
+      - name: porters-service
+        image: movenow/porters-service:latest
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 4002
+          protocol: TCP
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "4002"
+        - name: METRICS_PORT
+          value: "9090"
+        - name: SERVICE_NAME
+          value: "porters-service"
+
+        # Database
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: porters-secrets
+              key: database-url
+        - name: DATABASE_REPLICA_URL
+          valueFrom:
+            secretKeyRef:
+              name: porters-secrets
+              key: database-replica-url
+
+        # Redis
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: porters-config
+              key: redis-url
+        - name: REDIS_SESSION_DB
+          value: "0"
+        - name: REDIS_AVAILABILITY_DB
+          value: "1"
+        - name: REDIS_LOCATION_DB
+          value: "2"
+
+        # Kafka
+        - name: KAFKA_BROKERS
+          valueFrom:
+            configMapKeyRef:
+              name: porters-config
+              key: kafka-brokers
+        - name: KAFKA_CLIENT_ID
+          value: "porters-service"
+        - name: KAFKA_GROUP_ID
+          value: "porters-service-group"
+        - name: KAFKA_TOPIC_PREFIX
+          value: "movenow"
+
+        # JWT
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: porters-secrets
+              key: jwt-secret
+        - name: JWT_ISSUER
+          value: "movenow-auth-service"
+        - name: JWT_AUDIENCE
+          value: "movenow-services"
+
+        # Configuration
+        - name: LOG_LEVEL
+          value: "info"
+        - name: JOB_OFFER_TIMEOUT_SECONDS
+          value: "30"
+        - name: MAX_CONCURRENT_OFFERS_PER_PORTER
+          value: "3"
+        - name: LOCATION_UPDATE_RATE_LIMIT
+          value: "10"
+        - name: LOCATION_UPDATE_WINDOW_SECONDS
+          value: "1"
+        - name: LOCATION_SNAPSHOT_INTERVAL_SECONDS
+          value: "60"
+        - name: LOCATION_HISTORY_RETENTION_DAYS
+          value: "90"
+
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 4002
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 4002
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+      # Graceful shutdown
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: porters-service
+  labels:
+    app: porters-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 4002
+    targetPort: 4002
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+    protocol: TCP
+  selector:
+    app: porters-service
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: porters-service-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: porters-service
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80

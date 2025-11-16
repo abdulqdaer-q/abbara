@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: porters-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: movenow_porters
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: porters-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Kafka (using Redpanda for simpler local dev)
+  kafka:
+    image: docker.redpanda.com/redpandadata/redpanda:latest
+    container_name: porters-kafka
+    command:
+      - redpanda
+      - start
+      - --smp
+      - '1'
+      - --reserve-memory
+      - 0M
+      - --overprovisioned
+      - --node-id
+      - '0'
+      - --kafka-addr
+      - PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
+      - --advertise-kafka-addr
+      - PLAINTEXT://kafka:29092,OUTSIDE://localhost:9092
+    ports:
+      - "9092:9092"
+      - "9644:9644"
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+
+  # Porters Service
+  porters-service:
+    build:
+      context: .
+      target: development
+    container_name: porters-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 4002
+      METRICS_PORT: 9090
+
+      # Database
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/movenow_porters
+
+      # Redis
+      REDIS_URL: redis://redis:6379
+      REDIS_SESSION_DB: 0
+      REDIS_AVAILABILITY_DB: 1
+      REDIS_LOCATION_DB: 2
+
+      # Kafka
+      KAFKA_BROKERS: kafka:29092
+      KAFKA_CLIENT_ID: porters-service
+      KAFKA_GROUP_ID: porters-service-group
+      KAFKA_TOPIC_PREFIX: movenow
+
+      # JWT
+      JWT_SECRET: local-dev-secret-key-change-in-production
+      JWT_ISSUER: movenow-auth-service
+      JWT_AUDIENCE: movenow-services
+
+      # Configuration
+      LOG_LEVEL: debug
+      JOB_OFFER_TIMEOUT_SECONDS: 30
+      MAX_CONCURRENT_OFFERS_PER_PORTER: 3
+      LOCATION_UPDATE_RATE_LIMIT: 10
+      LOCATION_UPDATE_WINDOW_SECONDS: 1
+    ports:
+      - "4002:4002"
+      - "9092:9090"
+    volumes:
+      - ./src:/app/src
+      - ./prisma:/app/prisma
+    command: sh -c "pnpm prisma migrate dev && pnpm dev"
+
+volumes:
+  postgres_data:
+  redis_data:

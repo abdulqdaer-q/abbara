@@ -1,0 +1,363 @@
+// Prisma schema for Porters Service
+// Manages porter profiles, verification, availability, job offers, earnings, and location history
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// PORTER PROFILE & VERIFICATION
+// ============================================================================
+
+model PorterProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique // Links to User in Auth service
+
+  // Personal information
+  firstName String
+  lastName  String
+  phone     String
+  email     String
+
+  // Vehicle information
+  vehicleType       VehicleType
+  vehicleModel      String?
+  vehiclePlate      String?
+  vehicleColor      String?
+  vehicleCapacity   Int         @default(2) // Number of people/items
+
+  // Verification status
+  verificationStatus VerificationStatus @default(PENDING)
+  verifiedAt         DateTime?
+  verifiedBy         String?            // Admin user ID
+  rejectedAt         DateTime?
+  rejectionReason    String?
+
+  // Documents metadata (JSON array of document references)
+  // Format: [{ type: 'license', url: 'https://...', uploadedAt: '...', hash: '...' }]
+  documents          Json?
+
+  // Rating and statistics
+  rating             Float    @default(0.0)
+  completedJobsCount Int      @default(0)
+  totalEarningsCents BigInt   @default(0)
+
+  // Account status
+  isActive           Boolean  @default(true)
+  isSuspended        Boolean  @default(false)
+  suspendedAt        DateTime?
+  suspendedBy        String?
+  suspensionReason   String?
+
+  // Payout information (reference only, not full bank data)
+  payoutAccountId    String?
+  payoutProvider     String?  // e.g., 'stripe', 'paypal'
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  verificationHistory VerificationHistory[]
+  availabilityWindows AvailabilityWindow[]
+  deviceSessions      DeviceSession[]
+  jobOffers           JobOffer[]
+  earnings            PorterEarnings[]
+  locationHistory     LocationHistory[]
+
+  @@index([userId])
+  @@index([verificationStatus])
+  @@index([isActive, isSuspended])
+  @@index([vehicleType])
+  @@index([createdAt])
+}
+
+model VerificationHistory {
+  id          String             @id @default(cuid())
+  porterId    String
+  porter      PorterProfile      @relation(fields: [porterId], references: [id], onDelete: Cascade)
+
+  status      VerificationStatus
+  changedBy   String             // Admin or system user ID
+  reason      String?
+  notes       String?
+  documents   Json?              // Snapshot of documents at this verification step
+
+  createdAt   DateTime           @default(now())
+
+  @@index([porterId, createdAt])
+}
+
+// ============================================================================
+// AVAILABILITY & SHIFTS
+// ============================================================================
+
+model AvailabilityWindow {
+  id          String        @id @default(cuid())
+  porterId    String
+  porter      PorterProfile @relation(fields: [porterId], references: [id], onDelete: Cascade)
+
+  // Scheduled availability window
+  startAt     DateTime
+  endAt       DateTime
+  timezone    String        @default("UTC")
+
+  // Recurrence (optional future feature)
+  isRecurring Boolean       @default(false)
+  recurrence  Json?         // e.g., { pattern: 'weekly', days: [1, 3, 5] }
+
+  // Status
+  isActive    Boolean       @default(true)
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([porterId, startAt, endAt])
+  @@index([startAt, endAt, isActive])
+}
+
+// Note: Current online/offline status is primarily stored in Redis for low-latency
+// This model stores scheduled availability. Redis keys format:
+// - porter:availability:{porterId} -> { online: true, lastSeen: timestamp, location: {lat, lng} }
+// - porter:online -> Set of currently online porter IDs
+
+// ============================================================================
+// DEVICE & SESSION MANAGEMENT
+// ============================================================================
+
+model DeviceSession {
+  id             String        @id @default(cuid())
+  porterId       String
+  porter         PorterProfile @relation(fields: [porterId], references: [id], onDelete: Cascade)
+
+  // Device information
+  deviceId       String        @unique
+  deviceName     String?
+  deviceType     String?       // 'ios', 'android', 'web'
+
+  // Push notification token
+  pushToken      String?
+
+  // Socket/realtime mapping (ephemeral, also in Redis)
+  socketId       String?
+
+  // Session metadata
+  userAgent      String?
+  ipAddress      String?
+
+  // Activity tracking
+  lastActiveAt   DateTime      @default(now())
+  isActive       Boolean       @default(true)
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([porterId, isActive])
+  @@index([deviceId])
+  @@index([socketId])
+  @@index([lastActiveAt])
+}
+
+// ============================================================================
+// JOB OFFERS & ASSIGNMENTS
+// ============================================================================
+
+model JobOffer {
+  id                String           @id @default(cuid())
+  offerId           String           @unique @default(cuid())
+
+  // Order and porter references
+  orderId           String
+  porterId          String
+  porter            PorterProfile    @relation(fields: [porterId], references: [id], onDelete: Cascade)
+
+  // Offer details
+  offerStatus       OfferStatus      @default(PENDING)
+  offeredAt         DateTime         @default(now())
+  expiresAt         DateTime
+
+  // Response tracking
+  acceptedAt        DateTime?
+  rejectedAt        DateTime?
+  rejectionReason   String?
+  expiredAt         DateTime?
+  revokedAt         DateTime?
+  revokeReason      String?
+
+  // Assignment state (after acceptance)
+  assignmentStatus  AssignmentStatus @default(PENDING)
+  assignedAt        DateTime?
+  confirmedAt       DateTime?
+
+  // Idempotency
+  idempotencyKey    String?          @unique
+
+  // Audit
+  correlationId     String?
+  metadata          Json?
+
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@index([porterId, offerStatus])
+  @@index([orderId, offerStatus])
+  @@index([expiresAt])
+  @@index([offeredAt])
+  @@index([idempotencyKey])
+}
+
+// ============================================================================
+// EARNINGS & WITHDRAWALS
+// ============================================================================
+
+model PorterEarnings {
+  id                 String        @id @default(cuid())
+  porterId           String
+  porter             PorterProfile @relation(fields: [porterId], references: [id], onDelete: Cascade)
+
+  // Transaction type
+  type               EarningType
+
+  // Order reference (if applicable)
+  orderId            String?
+
+  // Amount
+  amountCents        BigInt
+  currency           String        @default("USD")
+
+  // Status
+  status             EarningStatus @default(PENDING)
+
+  // Payout reference
+  payoutId           String?
+  payoutStatus       String?       // 'pending', 'processing', 'completed', 'failed'
+  payoutAt           DateTime?
+  payoutProvider     String?
+
+  // Metadata
+  description        String?
+  metadata           Json?
+
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([porterId, createdAt])
+  @@index([porterId, status])
+  @@index([orderId])
+  @@index([type, status])
+}
+
+// ============================================================================
+// LOCATION HISTORY
+// ============================================================================
+
+model LocationHistory {
+  id          String        @id @default(cuid())
+  porterId    String
+  porter      PorterProfile @relation(fields: [porterId], references: [id], onDelete: Cascade)
+
+  // Location coordinates
+  latitude    Float
+  longitude   Float
+  accuracy    Float?        // Accuracy in meters
+
+  // Associated order (if tracking during delivery)
+  orderId     String?
+
+  // Snapshot metadata
+  capturedAt  DateTime      @default(now())
+  source      String        @default("gps") // 'gps', 'network', 'manual'
+
+  createdAt   DateTime      @default(now())
+
+  @@index([porterId, capturedAt])
+  @@index([orderId, capturedAt])
+  @@index([createdAt]) // For retention policy cleanup
+}
+
+// Note: Recent location updates are stored in Redis for low-latency reads
+// Redis key: porter:location:{porterId} -> { lat, lng, accuracy, timestamp }
+// This model stores periodic snapshots for audit and dispute resolution
+
+// ============================================================================
+// IDEMPOTENCY TRACKING
+// ============================================================================
+
+model IdempotencyRecord {
+  id             String   @id @default(cuid())
+  idempotencyKey String   @unique
+
+  // Request details
+  operation      String   // e.g., 'acceptJob', 'requestWithdrawal'
+  userId         String
+  porterId       String?
+
+  // Response (cached)
+  response       Json
+  statusCode     Int
+
+  // Expiration (auto-cleanup after 24 hours)
+  expiresAt      DateTime
+
+  createdAt      DateTime @default(now())
+
+  @@index([idempotencyKey])
+  @@index([expiresAt])
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum VehicleType {
+  SEDAN
+  SUV
+  VAN
+  TRUCK
+  MOTORCYCLE
+  BICYCLE
+}
+
+enum VerificationStatus {
+  PENDING
+  UNDER_REVIEW
+  VERIFIED
+  REJECTED
+  RESUBMIT_REQUIRED
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  REVOKED
+}
+
+enum AssignmentStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum EarningType {
+  JOB_PAYMENT
+  BONUS
+  TIP
+  ADJUSTMENT
+  REFUND
+}
+
+enum EarningStatus {
+  PENDING
+  CONFIRMED
+  PAID_OUT
+  CANCELLED
+}
