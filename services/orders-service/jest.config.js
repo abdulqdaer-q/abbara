@@ -3,6 +3,8 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/tests'],
   testMatch: ['**/*.test.ts'],
+  // Run tests serially to avoid database conflicts
+  maxWorkers: 1,
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',
