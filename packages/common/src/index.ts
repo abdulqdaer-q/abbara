@@ -131,7 +131,7 @@ export interface BaseEvent {
   userId?: string;
 }
 
-export interface OrderCreatedEvent extends BaseEvent {
+export interface LegacyOrderCreatedEvent extends BaseEvent {
   type: EventType.ORDER_CREATED;
   orderId: string;
   userId: string;
@@ -142,14 +142,14 @@ export interface OrderCreatedEvent extends BaseEvent {
   priceCents: number;
 }
 
-export interface OrderAssignedEvent extends BaseEvent {
+export interface LegacyOrderAssignedEvent extends BaseEvent {
   type: EventType.ORDER_ASSIGNED;
   orderId: string;
   porterId: string;
   userId: string;
 }
 
-export interface OrderCompletedEvent extends BaseEvent {
+export interface LegacyOrderCompletedEvent extends BaseEvent {
   type: EventType.ORDER_COMPLETED;
   orderId: string;
   userId: string;
@@ -205,9 +205,9 @@ export interface PorterVerifiedEvent extends BaseEvent {
  * Event union type (includes legacy and new events for backward compatibility)
  */
 export type DomainEvent =
-  | OrderCreatedEvent
-  | OrderAssignedEvent
-  | OrderCompletedEvent
+  | LegacyOrderCreatedEvent
+  | LegacyOrderAssignedEvent
+  | LegacyOrderCompletedEvent
   | PaymentCompletedEvent
   | UserCreatedEvent
   | UserUpdatedEvent
