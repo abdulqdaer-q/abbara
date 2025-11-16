@@ -1,0 +1,18 @@
+{
+  "name": "movenow",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MoveNow - On-demand moving and porter services platform",
+  "scripts": {
+    "dev": "pnpm --filter api-gateway dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint"
+  },
+  "keywords": ["movenow", "microservices", "trpc"],
+  "author": "MoveNow Team",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

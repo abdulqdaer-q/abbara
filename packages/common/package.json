@@ -1,0 +1,21 @@
+{
+  "name": "@movenow/common",
+  "version": "1.0.0",
+  "description": "Shared types, schemas, and events for MoveNow microservices",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "keywords": ["movenow", "shared", "types"],
+  "author": "MoveNow Team",
+  "license": "MIT",
+  "dependencies": {
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "typescript": "^5.3.3"
+  }
+}
