@@ -5,7 +5,6 @@ import {
   PorterVerifiedEvent,
   EventType,
   UserRole,
-  VerificationStatus,
 } from '@movenow/common';
 
 /**
