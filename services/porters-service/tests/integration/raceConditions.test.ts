@@ -64,7 +64,7 @@ describe('Race Condition Tests', () => {
 
     // Create offers for all porters for the same order
     const offers = await Promise.all(
-      porters.map((porter, idx) =>
+      porters.map((porter) =>
         prisma.jobOffer.create({
           data: {
             orderId: 'concurrent-order-1',
