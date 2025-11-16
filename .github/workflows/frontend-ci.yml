@@ -1,0 +1,85 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'apps/**'
+      - 'packages/common/**'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'apps/**'
+      - 'packages/common/**'
+
+jobs:
+  test-customer-app:
+    name: Test Customer App
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @movenow/customer-app test
+      - run: pnpm --filter @movenow/customer-app type-check
+      - run: pnpm --filter @movenow/customer-app lint
+
+  test-porter-app:
+    name: Test Porter App
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @movenow/porter-app test
+      - run: pnpm --filter @movenow/porter-app type-check
+      - run: pnpm --filter @movenow/porter-app lint
+
+  test-admin-panel:
+    name: Test Admin Panel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @movenow/admin-panel test
+      - run: pnpm --filter @movenow/admin-panel type-check
+      - run: pnpm --filter @movenow/admin-panel lint
+
+  build-admin-panel:
+    name: Build Admin Panel
+    runs-on: ubuntu-latest
+    needs: test-admin-panel
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @movenow/admin-panel build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: admin-panel-build
+          path: apps/admin-panel/dist

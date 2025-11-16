@@ -5,9 +5,13 @@
   "description": "MoveNow - On-demand moving and porter services platform",
   "scripts": {
     "dev": "pnpm --filter api-gateway dev",
+    "dev:customer": "pnpm --filter @movenow/customer-app start",
+    "dev:porter": "pnpm --filter @movenow/porter-app start",
+    "dev:admin": "pnpm --filter @movenow/admin-panel dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
-    "lint": "pnpm -r lint"
+    "lint": "pnpm -r lint",
+    "type-check": "pnpm -r type-check"
   },
   "keywords": ["movenow", "microservices", "trpc"],
   "author": "MoveNow Team",
