@@ -45,12 +45,10 @@ jobs:
         run: pnpm --filter @movenow/common build
 
       - name: Run linter
-        working-directory: ${{ env.SERVICE_PATH }}
-        run: pnpm lint
+        run: pnpm --filter @movenow/api-gateway lint
 
       - name: Run TypeScript type check
-        working-directory: ${{ env.SERVICE_PATH }}
-        run: pnpm type-check
+        run: pnpm --filter @movenow/api-gateway type-check
 
   test:
     name: Test
@@ -80,8 +78,7 @@ jobs:
         run: pnpm --filter @movenow/common build
 
       - name: Run tests with coverage
-        working-directory: ${{ env.SERVICE_PATH }}
-        run: pnpm test:coverage
+        run: pnpm --filter @movenow/api-gateway test:coverage
         env:
           NODE_ENV: test
           JWT_SECRET: test-jwt-secret-32-chars-minimum-length-required
