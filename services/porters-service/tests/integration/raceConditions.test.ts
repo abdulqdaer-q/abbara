@@ -262,7 +262,7 @@ describe('Race Condition Tests', () => {
 
     // Exactly ONE should succeed
     const successes = results.filter((r) => !('error' in r));
-    const failures = results.filter((r) => 'error' in r));
+    const failures = results.filter((r) => 'error' in r);
 
     expect(successes.length).toBe(1);
     expect(failures.length).toBe(9);
