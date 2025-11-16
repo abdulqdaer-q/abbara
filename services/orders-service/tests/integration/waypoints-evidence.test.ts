@@ -221,6 +221,62 @@ describe('Waypoints and Evidence Integration Tests', () => {
   });
 
   describe('Evidence Management', () => {
+    it('should upload multiple evidence files for single order', async () => {
+      const order = await prisma.order.create({
+        data: {
+          customerId: 'customer-123',
+          status: OrderStatus.DELIVERED,
+          priceCents: 5000,
+          currency: 'USD',
+          porterCountRequested: 1,
+          vehicleType: 'sedan',
+        },
+      });
+
+      // Verify order exists
+      expect(order.id).toBeDefined();
+      const verifyOrder = await prisma.order.findUnique({
+        where: { id: order.id },
+      });
+      expect(verifyOrder).toBeDefined();
+
+      await prisma.orderEvidence.create({
+        data: {
+          orderId: order.id,
+          type: EvidenceType.PRE_MOVE,
+          url: 'https://storage.example.com/photo1.jpg',
+          uploadedBy: 'porter-456',
+        },
+      });
+
+      await prisma.orderEvidence.create({
+        data: {
+          orderId: order.id,
+          type: EvidenceType.POST_MOVE,
+          url: 'https://storage.example.com/photo2.jpg',
+          uploadedBy: 'porter-456',
+        },
+      });
+
+      await prisma.orderEvidence.create({
+        data: {
+          orderId: order.id,
+          type: EvidenceType.SIGNATURE,
+          url: 'https://storage.example.com/signature.png',
+          uploadedBy: 'porter-456',
+        },
+      });
+
+      const allEvidence = await prisma.orderEvidence.findMany({
+        where: { orderId: order.id },
+      });
+
+      expect(allEvidence).toHaveLength(3);
+      expect(allEvidence.map((e) => e.type)).toContain(EvidenceType.PRE_MOVE);
+      expect(allEvidence.map((e) => e.type)).toContain(EvidenceType.POST_MOVE);
+      expect(allEvidence.map((e) => e.type)).toContain(EvidenceType.SIGNATURE);
+    });
+
     it('should upload pre-move evidence', async () => {
       const order = await prisma.order.create({
         data: {
@@ -337,55 +393,6 @@ describe('Waypoints and Evidence Integration Tests', () => {
       expect(evidence.type).toBe(EvidenceType.SIGNATURE);
     });
 
-    it('should upload multiple evidence files for single order', async () => {
-      const order = await prisma.order.create({
-        data: {
-          customerId: 'customer-123',
-          status: OrderStatus.DELIVERED,
-          priceCents: 5000,
-          currency: 'USD',
-          porterCountRequested: 1,
-          vehicleType: 'sedan',
-        },
-      });
-
-      await prisma.orderEvidence.create({
-        data: {
-          orderId: order.id,
-          type: EvidenceType.PRE_MOVE,
-          url: 'https://storage.example.com/photo1.jpg',
-          uploadedBy: 'porter-456',
-        },
-      });
-
-      await prisma.orderEvidence.create({
-        data: {
-          orderId: order.id,
-          type: EvidenceType.POST_MOVE,
-          url: 'https://storage.example.com/photo2.jpg',
-          uploadedBy: 'porter-456',
-        },
-      });
-
-      await prisma.orderEvidence.create({
-        data: {
-          orderId: order.id,
-          type: EvidenceType.SIGNATURE,
-          url: 'https://storage.example.com/signature.png',
-          uploadedBy: 'porter-456',
-        },
-      });
-
-      const allEvidence = await prisma.orderEvidence.findMany({
-        where: { orderId: order.id },
-      });
-
-      expect(allEvidence).toHaveLength(3);
-      expect(allEvidence.map((e) => e.type)).toContain(EvidenceType.PRE_MOVE);
-      expect(allEvidence.map((e) => e.type)).toContain(EvidenceType.POST_MOVE);
-      expect(allEvidence.map((e) => e.type)).toContain(EvidenceType.SIGNATURE);
-    });
-
     it('should store evidence metadata', async () => {
       const order = await prisma.order.create({
         data: {
@@ -452,6 +459,17 @@ describe('Waypoints and Evidence Integration Tests', () => {
         },
         include: { stops: true },
       });
+
+      // Verify order was created and exists in database
+      expect(order.id).toBeDefined();
+      expect(order.stops).toHaveLength(2);
+      const verifyOrder = await prisma.order.findUnique({
+        where: { id: order.id },
+        include: { stops: true },
+      });
+      expect(verifyOrder).toBeDefined();
+      expect(verifyOrder?.id).toBe(order.id);
+      expect(verifyOrder?.stops).toHaveLength(2);
 
       // Assign porter
       await prisma.orderAssignment.create({
