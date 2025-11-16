@@ -349,7 +349,7 @@ describe('Waypoints and Evidence Integration Tests', () => {
         },
       });
 
-      const evidence1 = await prisma.orderEvidence.create({
+      await prisma.orderEvidence.create({
         data: {
           orderId: order.id,
           type: EvidenceType.PRE_MOVE,
@@ -358,7 +358,7 @@ describe('Waypoints and Evidence Integration Tests', () => {
         },
       });
 
-      const evidence2 = await prisma.orderEvidence.create({
+      await prisma.orderEvidence.create({
         data: {
           orderId: order.id,
           type: EvidenceType.POST_MOVE,
@@ -367,7 +367,7 @@ describe('Waypoints and Evidence Integration Tests', () => {
         },
       });
 
-      const evidence3 = await prisma.orderEvidence.create({
+      await prisma.orderEvidence.create({
         data: {
           orderId: order.id,
           type: EvidenceType.SIGNATURE,

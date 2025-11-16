@@ -121,7 +121,7 @@ describe('Assignment Workflows Integration Tests', () => {
       });
 
       // Create multiple offers
-      const offer1 = await prisma.orderAssignment.create({
+      await prisma.orderAssignment.create({
         data: {
           orderId: order.id,
           porterId: 'porter-111',
@@ -131,7 +131,7 @@ describe('Assignment Workflows Integration Tests', () => {
         },
       });
 
-      const offer2 = await prisma.orderAssignment.create({
+      await prisma.orderAssignment.create({
         data: {
           orderId: order.id,
           porterId: 'porter-222',
@@ -142,7 +142,7 @@ describe('Assignment Workflows Integration Tests', () => {
       });
 
       // Porter 1 accepts
-      const accepted = await prisma.orderAssignment.update({
+      await prisma.orderAssignment.update({
         where: {
           orderId_porterId: {
             orderId: order.id,
@@ -191,7 +191,7 @@ describe('Assignment Workflows Integration Tests', () => {
         },
       });
 
-      const offer = await prisma.orderAssignment.create({
+      await prisma.orderAssignment.create({
         data: {
           orderId: order.id,
           porterId: 'porter-333',
@@ -265,7 +265,7 @@ describe('Assignment Workflows Integration Tests', () => {
         },
       });
 
-      const assignment1 = await prisma.orderAssignment.create({
+      await prisma.orderAssignment.create({
         data: {
           orderId: order.id,
           porterId: 'porter-555',
@@ -275,7 +275,7 @@ describe('Assignment Workflows Integration Tests', () => {
         },
       });
 
-      const assignment2 = await prisma.orderAssignment.create({
+      await prisma.orderAssignment.create({
         data: {
           orderId: order.id,
           porterId: 'porter-666',
