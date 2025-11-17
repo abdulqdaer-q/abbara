@@ -65,9 +65,11 @@ export class AuthService {
       role,
     };
 
-    return jwt.sign(payload, config.jwt.socketSecret, {
-      expiresIn: config.jwt.socketExpiry,
-    });
+    const options: jwt.SignOptions = {
+      expiresIn: config.jwt.socketExpiry as any,
+    };
+
+    return jwt.sign(payload, config.jwt.socketSecret, options);
   }
 
   /**

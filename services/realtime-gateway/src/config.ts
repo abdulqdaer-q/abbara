@@ -80,11 +80,14 @@ interface Config {
 }
 
 const getEnv = (key: string, defaultValue?: string): string => {
-  const value = process.env[key] || defaultValue;
-  if (!value && !defaultValue) {
-    throw new Error(`Missing required environment variable: ${key}`);
+  const value = process.env[key];
+  if (value !== undefined) {
+    return value;
   }
-  return value!;
+  if (defaultValue !== undefined) {
+    return defaultValue;
+  }
+  throw new Error(`Missing required environment variable: ${key}`);
 };
 
 export const config: Config = {

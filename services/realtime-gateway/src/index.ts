@@ -128,124 +128,127 @@ async function bootstrap() {
   adminNamespace.use(authMiddleware);
 
   // Client namespace handlers
-  clientNamespace.on('connection', async (socket: AuthenticatedSocket) => {
-    await authHandler.handleConnection(socket);
+  clientNamespace.on('connection', async (socket) => {
+    const authSocket = socket as AuthenticatedSocket;
+    await authHandler.handleConnection(authSocket);
 
     // Order subscriptions
-    socket.on(SocketEvent.SUBSCRIBE_ORDER, (payload) =>
-      orderHandler.handleSubscribe(socket, payload)
+    authSocket.on(SocketEvent.SUBSCRIBE_ORDER, (payload) =>
+      orderHandler.handleSubscribe(authSocket, payload)
     );
 
-    socket.on(SocketEvent.UNSUBSCRIBE_ORDER, (payload) =>
-      orderHandler.handleUnsubscribe(socket, payload)
+    authSocket.on(SocketEvent.UNSUBSCRIBE_ORDER, (payload) =>
+      orderHandler.handleUnsubscribe(authSocket, payload)
     );
 
     // Chat
-    socket.on(SocketEvent.CHAT_MESSAGE_SEND, (payload) =>
-      chatHandler.handleChatMessage(socket, payload)
+    authSocket.on(SocketEvent.CHAT_MESSAGE_SEND, (payload) =>
+      chatHandler.handleChatMessage(authSocket, payload)
     );
 
-    socket.on(SocketEvent.CHAT_TYPING_START, (payload) =>
-      chatHandler.handleTypingStart(socket, payload)
+    authSocket.on(SocketEvent.CHAT_TYPING_START, (payload) =>
+      chatHandler.handleTypingStart(authSocket, payload)
     );
 
-    socket.on(SocketEvent.CHAT_TYPING_STOP, (payload) =>
-      chatHandler.handleTypingStop(socket, payload)
+    authSocket.on(SocketEvent.CHAT_TYPING_STOP, (payload) =>
+      chatHandler.handleTypingStop(authSocket, payload)
     );
 
     // Heartbeat
-    socket.on(SocketEvent.HEARTBEAT, (payload) =>
-      authHandler.handleHeartbeat(socket, payload)
+    authSocket.on(SocketEvent.HEARTBEAT, (payload) =>
+      authHandler.handleHeartbeat(authSocket, payload)
     );
 
     // Reconnect
-    socket.on(SocketEvent.RECONNECT, (payload) =>
-      authHandler.handleReconnect(socket, payload)
+    authSocket.on(SocketEvent.RECONNECT, (payload) =>
+      authHandler.handleReconnect(authSocket, payload)
     );
 
     // Disconnect
-    socket.on('disconnect', (reason) =>
-      authHandler.handleDisconnection(socket, reason)
+    authSocket.on('disconnect', (reason) =>
+      authHandler.handleDisconnection(authSocket, reason)
     );
   });
 
   // Porter namespace handlers
-  porterNamespace.on('connection', async (socket: AuthenticatedSocket) => {
-    await authHandler.handleConnection(socket);
+  porterNamespace.on('connection', async (socket) => {
+    const authSocket = socket as AuthenticatedSocket;
+    await authHandler.handleConnection(authSocket);
 
     // Location updates
-    socket.on(SocketEvent.LOCATION_UPDATE, (payload) =>
-      locationHandler.handleLocationUpdate(socket, payload)
+    authSocket.on(SocketEvent.LOCATION_UPDATE, (payload) =>
+      locationHandler.handleLocationUpdate(authSocket, payload)
     );
 
     // Order subscriptions
-    socket.on(SocketEvent.SUBSCRIBE_ORDER, (payload) =>
-      orderHandler.handleSubscribe(socket, payload)
+    authSocket.on(SocketEvent.SUBSCRIBE_ORDER, (payload) =>
+      orderHandler.handleSubscribe(authSocket, payload)
     );
 
-    socket.on(SocketEvent.UNSUBSCRIBE_ORDER, (payload) =>
-      orderHandler.handleUnsubscribe(socket, payload)
+    authSocket.on(SocketEvent.UNSUBSCRIBE_ORDER, (payload) =>
+      orderHandler.handleUnsubscribe(authSocket, payload)
     );
 
     // Job offers
-    socket.on(SocketEvent.JOB_OFFER_ACCEPT, (payload) =>
-      jobOfferHandler.handleAcceptOffer(socket, payload)
+    authSocket.on(SocketEvent.JOB_OFFER_ACCEPT, (payload) =>
+      jobOfferHandler.handleAcceptOffer(authSocket, payload)
     );
 
-    socket.on(SocketEvent.JOB_OFFER_REJECT, (payload) =>
-      jobOfferHandler.handleRejectOffer(socket, payload)
+    authSocket.on(SocketEvent.JOB_OFFER_REJECT, (payload) =>
+      jobOfferHandler.handleRejectOffer(authSocket, payload)
     );
 
     // Chat
-    socket.on(SocketEvent.CHAT_MESSAGE_SEND, (payload) =>
-      chatHandler.handleChatMessage(socket, payload)
+    authSocket.on(SocketEvent.CHAT_MESSAGE_SEND, (payload) =>
+      chatHandler.handleChatMessage(authSocket, payload)
     );
 
-    socket.on(SocketEvent.CHAT_TYPING_START, (payload) =>
-      chatHandler.handleTypingStart(socket, payload)
+    authSocket.on(SocketEvent.CHAT_TYPING_START, (payload) =>
+      chatHandler.handleTypingStart(authSocket, payload)
     );
 
-    socket.on(SocketEvent.CHAT_TYPING_STOP, (payload) =>
-      chatHandler.handleTypingStop(socket, payload)
+    authSocket.on(SocketEvent.CHAT_TYPING_STOP, (payload) =>
+      chatHandler.handleTypingStop(authSocket, payload)
     );
 
     // Heartbeat
-    socket.on(SocketEvent.HEARTBEAT, (payload) =>
-      authHandler.handleHeartbeat(socket, payload)
+    authSocket.on(SocketEvent.HEARTBEAT, (payload) =>
+      authHandler.handleHeartbeat(authSocket, payload)
     );
 
     // Reconnect
-    socket.on(SocketEvent.RECONNECT, (payload) =>
-      authHandler.handleReconnect(socket, payload)
+    authSocket.on(SocketEvent.RECONNECT, (payload) =>
+      authHandler.handleReconnect(authSocket, payload)
     );
 
     // Disconnect
-    socket.on('disconnect', (reason) =>
-      authHandler.handleDisconnection(socket, reason)
+    authSocket.on('disconnect', (reason) =>
+      authHandler.handleDisconnection(authSocket, reason)
     );
   });
 
   // Admin namespace handlers
-  adminNamespace.on('connection', async (socket: AuthenticatedSocket) => {
-    await authHandler.handleConnection(socket);
+  adminNamespace.on('connection', async (socket) => {
+    const authSocket = socket as AuthenticatedSocket;
+    await authHandler.handleConnection(authSocket);
 
     // Admins can subscribe to any order
-    socket.on(SocketEvent.SUBSCRIBE_ORDER, (payload) =>
-      orderHandler.handleSubscribe(socket, payload)
+    authSocket.on(SocketEvent.SUBSCRIBE_ORDER, (payload) =>
+      orderHandler.handleSubscribe(authSocket, payload)
     );
 
-    socket.on(SocketEvent.UNSUBSCRIBE_ORDER, (payload) =>
-      orderHandler.handleUnsubscribe(socket, payload)
+    authSocket.on(SocketEvent.UNSUBSCRIBE_ORDER, (payload) =>
+      orderHandler.handleUnsubscribe(authSocket, payload)
     );
 
     // Heartbeat
-    socket.on(SocketEvent.HEARTBEAT, (payload) =>
-      authHandler.handleHeartbeat(socket, payload)
+    authSocket.on(SocketEvent.HEARTBEAT, (payload) =>
+      authHandler.handleHeartbeat(authSocket, payload)
     );
 
     // Disconnect
-    socket.on('disconnect', (reason) =>
-      authHandler.handleDisconnection(socket, reason)
+    authSocket.on('disconnect', (reason) =>
+      authHandler.handleDisconnection(authSocket, reason)
     );
   });
 

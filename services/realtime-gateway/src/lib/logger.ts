@@ -13,7 +13,7 @@ const consoleFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   winston.format.printf(({ timestamp, level, message, correlationId, socketId, userId, ...meta }) => {
     const correlationPart = correlationId ? `[${correlationId}]` : '';
-    const socketPart = socketId ? `[socket:${socketId.substring(0, 8)}]` : '';
+    const socketPart = socketId && typeof socketId === 'string' ? `[socket:${socketId.substring(0, 8)}]` : '';
     const userPart = userId ? `[user:${userId}]` : '';
     const metaPart = Object.keys(meta).length ? JSON.stringify(meta) : '';
     return `${timestamp} ${level} ${correlationPart}${socketPart}${userPart}: ${message} ${metaPart}`;
