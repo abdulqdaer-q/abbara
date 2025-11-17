@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  pricing:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: movenow-pricing
+    ports:
+      - '3002:3002'
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/movenow_pricing
+      - REDIS_URL=redis://redis:6379
+      - LOG_LEVEL=debug
+      - MAPS_PROVIDER_ENABLED=false
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - movenow
+    volumes:
+      - ./prisma:/app/prisma
+    command: sh -c "npx prisma migrate deploy && node dist/index.js"
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: movenow-pricing-db
+    ports:
+      - '5433:5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=movenow_pricing
+    volumes:
+      - pricing-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - movenow
+
+  redis:
+    image: redis:7-alpine
+    container_name: movenow-pricing-redis
+    ports:
+      - '6380:6379'
+    command: redis-server --appendonly yes
+    volumes:
+      - pricing-redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - movenow
+
+  # Optional: Prisma Studio for database management
+  prisma-studio:
+    image: node:18-alpine
+    container_name: movenow-pricing-studio
+    working_dir: /app
+    ports:
+      - '5555:5555'
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/movenow_pricing
+    volumes:
+      - .:/app
+    command: sh -c "npm install -g prisma && npx prisma studio"
+    depends_on:
+      - postgres
+    networks:
+      - movenow
+
+networks:
+  movenow:
+    driver: bridge
+
+volumes:
+  pricing-db-data:
+  pricing-redis-data:
