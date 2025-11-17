@@ -1,6 +1,6 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import { z } from 'zod';
-// @ts-ignore - superjson types in pnpm workspace
+// @ts-expect-error - superjson types in pnpm workspace
 import superjson from 'superjson';
 import { Context } from '../context';
 import { requirePorter, requireAdmin, requireOwnPorterProfile } from '../middleware/auth';
