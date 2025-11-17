@@ -5,8 +5,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { JobsNavigator } from './JobsNavigator';
 import { WalletNavigator } from './WalletNavigator';
 import { ProfileNavigator } from './ProfileNavigator';
+import { PerformanceDashboardScreen } from '../modules/dashboard/screens/PerformanceDashboardScreen';
 
 export type MainTabParamList = {
+  Dashboard: undefined;
   Jobs: undefined;
   Wallet: undefined;
   Profile: undefined;
@@ -21,7 +23,9 @@ export const MainNavigator: React.FC = () => {
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap;
 
-          if (route.name === 'Jobs') {
+          if (route.name === 'Dashboard') {
+            iconName = focused ? 'stats-chart' : 'stats-chart-outline';
+          } else if (route.name === 'Jobs') {
             iconName = focused ? 'briefcase' : 'briefcase-outline';
           } else if (route.name === 'Wallet') {
             iconName = focused ? 'wallet' : 'wallet-outline';
@@ -37,6 +41,7 @@ export const MainNavigator: React.FC = () => {
         tabBarInactiveTintColor: 'gray',
       })}
     >
+      <Tab.Screen name="Dashboard" component={PerformanceDashboardScreen} options={{ title: 'Dashboard' }} />
       <Tab.Screen name="Jobs" component={JobsNavigator} options={{ headerShown: false }} />
       <Tab.Screen name="Wallet" component={WalletNavigator} options={{ title: 'Earnings' }} />
       <Tab.Screen name="Profile" component={ProfileNavigator} options={{ headerShown: false }} />
