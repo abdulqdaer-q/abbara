@@ -252,7 +252,7 @@ async function getPromoUsageAnalytics(_dateFrom: Date, _dateTo: Date, _groupBy: 
   }));
 }
 
-async function getPromoUsageSummary(dateFrom: Date, dateTo: Date) {
+async function getPromoUsageSummary(_dateFrom: Date, _dateTo: Date) {
   const totalPromoCodes = await prisma.promoCode.count();
   const activePromoCodes = await prisma.promoCode.count({ where: { status: 'ACTIVE' } });
   const totalUsage = await prisma.promoCode.aggregate({

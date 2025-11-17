@@ -43,7 +43,7 @@ export const messagingRouter = router({
       });
 
       // Update conversation's last message timestamp and unread count
-      const senderIndex = conversation.participants.indexOf(ctx.user.id);
+      const _senderIndex = conversation.participants.indexOf(ctx.user.id);
       const recipientIndex = conversation.participants.indexOf(input.recipientId);
 
       await ctx.db.conversation.update({

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, Filter } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 
 export const OrdersPage: React.FC = () => {
