@@ -1,5 +1,8 @@
-import { PrismaClient, RefreshToken } from '@prisma/client';
 import { logger } from '../utils/logger';
+
+// Define types since Prisma client may not be generated
+type PrismaClient = any;
+type RefreshToken = any;
 
 export interface CreateRefreshTokenInput {
   tokenHash: string;

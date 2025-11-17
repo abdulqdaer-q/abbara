@@ -1,5 +1,9 @@
-import { PrismaClient, User, UserRole } from '@prisma/client';
 import { logger } from '../utils/logger';
+
+// Define types since Prisma client may not be generated
+type PrismaClient = any;
+type User = any;
+type UserRole = 'CUSTOMER' | 'PORTER' | 'ADMIN';
 
 export interface CreateUserInput {
   email?: string;

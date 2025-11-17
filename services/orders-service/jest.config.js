@@ -16,6 +16,7 @@ module.exports = {
     '!src/lib/metrics.ts',
     '!src/lib/correlation.ts',
   ],
+  coverageReporters: ['text', 'lcov', 'html', 'json-summary'],
   coverageThreshold: {
     global: {
       branches: 45,

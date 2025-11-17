@@ -1,20 +1,20 @@
-name: Auth & Users Service CI/CD
+name: Admin Management Service CI/CD
 
 on:
   push:
     branches: [main, develop]
     paths:
-      - 'services/auth-users-service/**'
+      - 'services/admin-management/**'
       - 'packages/common/**'
-      - '.github/workflows/auth-users-service.yml'
+      - '.github/workflows/admin-management.yml'
   pull_request:
     branches: [main, develop]
     paths:
-      - 'services/auth-users-service/**'
+      - 'services/admin-management/**'
       - 'packages/common/**'
 
 env:
-  SERVICE_PATH: services/auth-users-service
+  SERVICE_PATH: services/admin-management
   NODE_VERSION: '20'
 
 jobs:
@@ -47,7 +47,10 @@ jobs:
         run: pnpm --filter @movenow/common build
 
       - name: Run linter
-        run: pnpm --filter @movenow/auth-users-service lint
+        run: pnpm --filter @movenow/admin-management lint
+
+      - name: Run TypeScript type check
+        run: pnpm --filter @movenow/admin-management type-check
 
   test:
     name: Test
@@ -66,16 +69,6 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 3s
-          --health-retries 5
-        ports:
-          - 6379:6379
 
     steps:
       - name: Checkout code
@@ -108,15 +101,19 @@ jobs:
         env:
           PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING: 1
 
-      - name: Run tests
+      - name: Push database schema
+        working-directory: ${{ env.SERVICE_PATH }}
+        run: npx prisma db push --accept-data-loss
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+
+      - name: Run tests with coverage
         working-directory: ${{ env.SERVICE_PATH }}
         run: pnpm test:coverage
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/test
-          REDIS_URL: redis://localhost:6379
-          JWT_ACCESS_SECRET: test-access-secret-32-chars-minimum-length
-          JWT_REFRESH_SECRET: test-refresh-secret-32-chars-minimum-length
-          JWT_ALGORITHM: HS256
+          JWT_SECRET: test-jwt-secret-32-chars-minimum-length-required
+          NODE_ENV: test
 
       - name: Check coverage threshold
         run: |
@@ -141,7 +138,7 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           files: ${{ env.SERVICE_PATH }}/coverage/lcov.info
-          flags: auth-users-service
+          flags: admin-management
 
   build:
     name: Build
@@ -179,12 +176,12 @@ jobs:
           PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING: 1
 
       - name: Build service
-        run: pnpm --filter @movenow/auth-users-service build
+        run: pnpm --filter @movenow/admin-management build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: auth-users-service-dist
+          name: admin-management-dist
           path: ${{ env.SERVICE_PATH }}/dist
 
   docker:
@@ -209,7 +206,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: movenow/auth-users-service
+          images: movenow/admin-management
           tags: |
             type=ref,event=branch
             type=sha,prefix={{branch}}-

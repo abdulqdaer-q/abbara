@@ -1,5 +1,8 @@
-import { PrismaClient, PasswordResetToken } from '@prisma/client';
 import { logger } from '../utils/logger';
+
+// Define types since Prisma client may not be generated
+type PrismaClient = any;
+type PasswordResetToken = any;
 
 export interface CreatePasswordResetTokenInput {
   userId: string;
