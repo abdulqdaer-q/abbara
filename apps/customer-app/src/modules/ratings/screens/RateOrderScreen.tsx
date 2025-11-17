@@ -9,8 +9,7 @@ interface Props {
   route: RateOrderScreenRouteProp;
 }
 
-export const RateOrderScreen: React.FC<Props> = ({ route }) => {
-  const { orderId, porterId } = route.params;
+export const RateOrderScreen: React.FC<Props> = ({ route: _route }) => {
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState('');
 

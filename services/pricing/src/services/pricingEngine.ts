@@ -1,4 +1,4 @@
-import { PrismaClient, PricingRule, RuleType, CustomerType as DbCustomerType, VehicleType as DbVehicleType } from '@prisma/client';
+import { PricingRule, RuleType, CustomerType as DbCustomerType, VehicleType as DbVehicleType } from '@prisma/client';
 import { prisma } from '../lib/db';
 import { logger } from '../lib/logger';
 import { config } from '../config';

@@ -65,7 +65,7 @@ export class DuplicateNotificationError extends AppError {
 /**
  * Convert an AppError to a TRPCError
  */
-export function toTRPCError(error: AppError, correlationId?: string): TRPCError {
+export function toTRPCError(error: AppError, _correlationId?: string): TRPCError {
   const codeMap: Record<string, TRPCError['code']> = {
     NOT_FOUND: 'NOT_FOUND',
     VALIDATION_ERROR: 'BAD_REQUEST',

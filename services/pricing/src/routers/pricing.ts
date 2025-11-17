@@ -9,7 +9,6 @@ import { eventPublisher } from '../lib/events';
 import {
   PricingEstimateInputSchema,
   PricingEstimateOutputSchema,
-  PricingSnapshotSchema,
 } from '@movenow/common';
 
 /**

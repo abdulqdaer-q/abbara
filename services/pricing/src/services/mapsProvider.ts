@@ -82,7 +82,6 @@ export async function getDistanceAndTime(
 
   // Call external API
   const startTime = Date.now();
-  let success = false;
   let error: string | undefined;
 
   try {
@@ -98,7 +97,6 @@ export async function getDistanceAndTime(
     const element = response.data.rows[0]?.elements[0];
 
     if (element?.status === 'OK') {
-      success = true;
       const result: DistanceTimeResult = {
         distanceMeters: element.distance.value,
         durationSeconds: element.duration.value,
@@ -147,7 +145,6 @@ export async function getDistanceAndTime(
     error = `Maps API error: ${element?.status}`;
     throw new Error(error);
   } catch (err) {
-    success = false;
     error = err instanceof Error ? err.message : String(err);
 
     logExternalCall({

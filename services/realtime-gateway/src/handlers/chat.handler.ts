@@ -8,7 +8,6 @@ import {
   TypingIndicatorPayloadSchema,
 } from '@movenow/common';
 import { AuthenticatedSocket, ChatMessage } from '../types';
-import { redisService } from '../services/redis.service';
 import { kafkaService } from '../services/kafka.service';
 import { metricsService } from '../services/metrics.service';
 import { rateLimiter } from '../middleware/rateLimiter';

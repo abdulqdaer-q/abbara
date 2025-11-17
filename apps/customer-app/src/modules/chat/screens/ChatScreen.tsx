@@ -25,8 +25,7 @@ interface Message {
   timestamp: Date;
 }
 
-export const ChatScreen: React.FC<Props> = ({ route }) => {
-  const { orderId, porterId } = route.params;
+export const ChatScreen: React.FC<Props> = ({ route: _route }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
 

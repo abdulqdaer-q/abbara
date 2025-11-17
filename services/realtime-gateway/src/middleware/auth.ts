@@ -14,7 +14,6 @@ export const authMiddleware = async (
   socket: Socket,
   next: (err?: ExtendedError) => void
 ): Promise<void> => {
-  const startTime = Date.now();
   const correlationId = getOrCreateCorrelationId(socket.handshake.headers);
 
   try {
@@ -58,7 +57,6 @@ export const authMiddleware = async (
     });
 
     // Record authentication latency
-    const latency = Date.now() - startTime;
     metricsService.timeAuthentication();
 
     next();
