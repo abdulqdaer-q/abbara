@@ -1,0 +1,116 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-management
+  labels:
+    app: admin-management
+    service: movenow
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: admin-management
+  template:
+    metadata:
+      labels:
+        app: admin-management
+        version: v1
+    spec:
+      containers:
+        - name: admin-management
+          image: movenow/admin-management:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3001
+              name: http
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3001"
+            - name: HOST
+              value: "0.0.0.0"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: admin-management-secrets
+                  key: database-url
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: admin-management-secrets
+                  key: jwt-secret
+            - name: KAFKA_BROKERS
+              valueFrom:
+                configMapKeyRef:
+                  name: admin-management-config
+                  key: kafka-brokers
+            - name: KAFKA_CLIENT_ID
+              value: "admin-management-service"
+            - name: KAFKA_GROUP_ID
+              value: "admin-management-consumer-group"
+            - name: LOG_LEVEL
+              value: "info"
+            - name: ENABLE_ANALYTICS
+              value: "true"
+            - name: ENABLE_AUDIT_LOGS
+              value: "true"
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin-management
+  labels:
+    app: admin-management
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3001
+      targetPort: 3001
+      protocol: TCP
+      name: http
+  selector:
+    app: admin-management
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: admin-management-config
+data:
+  kafka-brokers: "kafka-service:9092"
+  rate-limit-window-ms: "900000"
+  rate-limit-max-requests: "100"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: admin-management-secrets
+type: Opaque
+stringData:
+  database-url: "postgresql://user:password@postgres:5432/movenow_admin"
+  jwt-secret: "your-super-secret-jwt-key-change-in-production-must-be-32-chars-min"
