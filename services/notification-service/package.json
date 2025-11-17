@@ -1,0 +1,73 @@
+{
+  "name": "@movenow/notification-service",
+  "version": "1.0.0",
+  "description": "Centralized notification and messaging service for MoveNow platform",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src tests --ext .ts",
+    "lint:fix": "eslint src tests --ext .ts --fix",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "docker:build": "docker build -t movenow/notification-service .",
+    "docker:run": "docker-compose up"
+  },
+  "keywords": [
+    "notifications",
+    "messaging",
+    "push-notifications",
+    "chat",
+    "trpc",
+    "microservices"
+  ],
+  "author": "MoveNow Team",
+  "license": "MIT",
+  "dependencies": {
+    "@movenow/common": "workspace:*",
+    "@prisma/client": "^5.22.0",
+    "@trpc/server": "^10.45.2",
+    "amqplib": "^0.10.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "firebase-admin": "^12.0.0",
+    "helmet": "^7.1.0",
+    "ioredis": "^5.3.2",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.13",
+    "superjson": "^2.2.1",
+    "twilio": "^5.0.3",
+    "uuid": "^9.0.1",
+    "winston": "^3.13.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.4",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.12.7",
+    "@types/node-cron": "^3.0.11",
+    "@types/nodemailer": "^6.4.14",
+    "@types/uuid": "^9.0.8",
+    "@typescript-eslint/eslint-plugin": "^7.6.0",
+    "@typescript-eslint/parser": "^7.6.0",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "prisma": "^5.22.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.7.2",
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

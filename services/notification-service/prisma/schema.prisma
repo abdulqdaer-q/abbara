@@ -1,0 +1,178 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Notification Model - Stores all notification records
+model Notification {
+  id             String   @id @default(uuid())
+  recipientId    String
+  channels       String[] // push, email, sms, webhook
+  messageType    String   // order_update, bid_update, system_announcement, etc.
+  payload        Json     // Flexible payload for different notification types
+  priority       Int      @default(0) // 0=low, 1=normal, 2=high, 3=urgent
+  status         String   @default("queued") // queued, sent, failed, delivered, read
+  metadata       Json?    // Optional metadata
+  retryCount     Int      @default(0)
+  lastRetryAt    DateTime?
+  sentAt         DateTime?
+  deliveredAt    DateTime?
+  readAt         DateTime?
+  failureReason  String?
+  idempotencyKey String?  @unique
+  correlationId  String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  deliveryAudits DeliveryAudit[]
+
+  @@index([recipientId])
+  @@index([status])
+  @@index([messageType])
+  @@index([createdAt])
+  @@index([idempotencyKey])
+  @@index([correlationId])
+}
+
+// InAppMessage Model - Chat messages between users (customer-porter)
+model InAppMessage {
+  id             String   @id @default(uuid())
+  conversationId String
+  senderId       String
+  recipientId    String
+  content        String   @db.Text
+  messageType    String   @default("text") // text, image, location, system
+  relatedOrderId String?
+  readStatus     Boolean  @default(false)
+  readAt         DateTime?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([recipientId])
+  @@index([readStatus])
+  @@index([createdAt])
+  @@index([relatedOrderId])
+}
+
+// Conversation Model - Tracks conversations between users
+model Conversation {
+  id                    String   @id @default(uuid())
+  participants          String[] // Array of user IDs
+  lastMessageAt         DateTime @default(now())
+  unreadCountUser1      Int      @default(0) // Unread count for participants[0]
+  unreadCountUser2      Int      @default(0) // Unread count for participants[1]
+  relatedOrderId        String?
+  metadata              Json?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  messages              InAppMessage[]
+
+  @@index([participants])
+  @@index([lastMessageAt])
+  @@index([relatedOrderId])
+}
+
+// DeliveryAudit Model - Tracks delivery attempts and results
+model DeliveryAudit {
+  id             String   @id @default(uuid())
+  notificationId String?
+  messageId      String?  // For in-app messages
+  deliveryStatus String   // queued, sending, sent, failed, delivered
+  channel        String   // push, email, sms, in_app, webhook
+  errorCode      String?
+  errorMessage   String?  @db.Text
+  attemptNumber  Int      @default(1)
+  correlationId  String?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  notification   Notification? @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([notificationId])
+  @@index([messageId])
+  @@index([deliveryStatus])
+  @@index([channel])
+  @@index([createdAt])
+  @@index([correlationId])
+}
+
+// UserPreferences Model - User notification preferences
+model UserPreferences {
+  id                    String   @id @default(uuid())
+  userId                String   @unique
+  pushEnabled           Boolean  @default(true)
+  emailEnabled          Boolean  @default(true)
+  smsEnabled            Boolean  @default(false)
+
+  // Message type preferences
+  orderUpdatesEnabled   Boolean  @default(true)
+  bidUpdatesEnabled     Boolean  @default(true)
+  chatMessagesEnabled   Boolean  @default(true)
+  promotionsEnabled     Boolean  @default(true)
+  systemAlertsEnabled   Boolean  @default(true)
+
+  // Quiet hours
+  quietHoursEnabled     Boolean  @default(false)
+  quietHoursStart       String?  // HH:mm format
+  quietHoursEnd         String?  // HH:mm format
+  quietHoursTimezone    String?  // e.g., "America/New_York"
+
+  // Device tokens for push notifications
+  fcmTokens             String[] // Firebase Cloud Messaging tokens
+  apnsTokens            String[] // Apple Push Notification Service tokens
+
+  metadata              Json?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// DeviceToken Model - Tracks device tokens for push notifications
+model DeviceToken {
+  id           String   @id @default(uuid())
+  userId       String
+  token        String   @unique
+  platform     String   // ios, android, web
+  deviceInfo   Json?    // Device name, OS version, app version, etc.
+  isActive     Boolean  @default(true)
+  lastUsedAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([token])
+  @@index([platform])
+  @@index([isActive])
+}
+
+// NotificationTemplate Model - Reusable notification templates
+model NotificationTemplate {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  messageType String
+  channels    String[] // Supported channels for this template
+  title       String?
+  body        String   @db.Text
+  variables   String[] // List of variable names used in template (e.g., ["userName", "orderId"])
+  metadata    Json?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([messageType])
+  @@index([isActive])
+}

@@ -170,6 +170,14 @@ export enum EventType {
   BID_EXPIRED = 'bid.expired',
   BID_CLOSED = 'bid.closed',
   BID_CANCELLED = 'bid.cancelled',
+
+  // Notification events
+  NOTIFICATION_SENT = 'notification.sent',
+  NOTIFICATION_DELIVERED = 'notification.delivered',
+  NOTIFICATION_READ = 'notification.read',
+  NOTIFICATION_FAILED = 'notification.failed',
+  MESSAGE_SENT = 'message.sent',
+  MESSAGE_READ = 'message.read',
 }
 
 export interface BaseEvent {
@@ -220,6 +228,52 @@ export interface PaymentPayoutProcessedEvent extends BaseEvent {
   porterId: string;
   amountCents: number;
   status: 'completed' | 'failed';
+}
+
+export interface NotificationSentEvent extends BaseEvent {
+  type: EventType.NOTIFICATION_SENT;
+  notificationId: string;
+  recipientId: string;
+  channels: string[];
+  messageType: string;
+}
+
+export interface NotificationDeliveredEvent extends BaseEvent {
+  type: EventType.NOTIFICATION_DELIVERED;
+  notificationId: string;
+  recipientId: string;
+  channel: string;
+}
+
+export interface NotificationReadEvent extends BaseEvent {
+  type: EventType.NOTIFICATION_READ;
+  notificationId: string;
+  recipientId: string;
+  readAt: Date;
+}
+
+export interface NotificationFailedEvent extends BaseEvent {
+  type: EventType.NOTIFICATION_FAILED;
+  notificationId: string;
+  recipientId: string;
+  channel: string;
+  errorMessage: string;
+}
+
+export interface MessageSentEvent extends BaseEvent {
+  type: EventType.MESSAGE_SENT;
+  messageId: string;
+  conversationId: string;
+  senderId: string;
+  recipientId: string;
+}
+
+export interface MessageReadEvent extends BaseEvent {
+  type: EventType.MESSAGE_READ;
+  messageId: string;
+  conversationId: string;
+  recipientId: string;
+  readAt: Date;
 }
 
 /**
@@ -603,7 +657,13 @@ export type DomainEvent =
   | BidExpiredEvent
   | BidClosedEvent
   | BidCancelledEvent
-  | OrderCancelledEvent;
+  | OrderCancelledEvent
+  | NotificationSentEvent
+  | NotificationDeliveredEvent
+  | NotificationReadEvent
+  | NotificationFailedEvent
+  | MessageSentEvent
+  | MessageReadEvent;
 
 /**
  * ========================================
@@ -859,3 +919,4 @@ export type SocketErrorResponse = z.infer<typeof SocketErrorResponseSchema>;
 export * from './types/orders';
 export * from './events/orders';
 export * from './schemas/orders';
+>>>>>>> origin/main
