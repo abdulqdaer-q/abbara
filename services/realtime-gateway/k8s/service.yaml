@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: realtime-gateway
+  labels:
+    app: realtime-gateway
+spec:
+  type: LoadBalancer
+  sessionAffinity: None  # Redis adapter handles cross-instance routing
+  ports:
+  - name: http
+    port: 80
+    targetPort: 3002
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+    protocol: TCP
+  selector:
+    app: realtime-gateway
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: realtime-gateway-metrics
+  labels:
+    app: realtime-gateway
+spec:
+  type: ClusterIP
+  ports:
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+    protocol: TCP
+  selector:
+    app: realtime-gateway
