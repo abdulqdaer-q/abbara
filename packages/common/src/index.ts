@@ -161,6 +161,15 @@ export enum EventType {
   // User events
   USER_CREATED = 'user.created',
   USER_UPDATED = 'user.updated',
+
+  // Bidding events
+  BID_OPENED = 'bid.opened',
+  BID_PLACED = 'bid.placed',
+  BID_ACCEPTED = 'bid.accepted',
+  BID_WINNER_SELECTED = 'bid.winner.selected',
+  BID_EXPIRED = 'bid.expired',
+  BID_CLOSED = 'bid.closed',
+  BID_CANCELLED = 'bid.cancelled',
 }
 
 export interface BaseEvent {
@@ -211,6 +220,78 @@ export interface PaymentPayoutProcessedEvent extends BaseEvent {
   porterId: string;
   amountCents: number;
   status: 'completed' | 'failed';
+}
+
+/**
+ * Bidding-related events
+ */
+export interface BidOpenedEvent extends BaseEvent {
+  type: EventType.BID_OPENED;
+  biddingWindowId: string;
+  orderIds: string[];
+  expiresAt: Date;
+  strategyId: string;
+  configuration: {
+    minBidCents?: number;
+    reservePriceCents?: number;
+    allowedPorterFilters?: Record<string, any>;
+  };
+}
+
+export interface BidPlacedEvent extends BaseEvent {
+  type: EventType.BID_PLACED;
+  bidId: string;
+  biddingWindowId: string;
+  porterId: string;
+  amountCents: number;
+  estimatedArrivalMinutes: number;
+  placedAt: Date;
+}
+
+export interface BidAcceptedEvent extends BaseEvent {
+  type: EventType.BID_ACCEPTED;
+  bidId: string;
+  biddingWindowId: string;
+  porterId: string;
+  amountCents: number;
+  acceptedAt: Date;
+  acceptedBy: string; // actor (customer/admin/system)
+}
+
+export interface BidWinnerSelectedEvent extends BaseEvent {
+  type: EventType.BID_WINNER_SELECTED;
+  biddingWindowId: string;
+  bidId: string;
+  orderIds: string[];
+  winnerPorterId: string;
+  winningAmountCents: number;
+  selectedAt: Date;
+}
+
+export interface BidExpiredEvent extends BaseEvent {
+  type: EventType.BID_EXPIRED;
+  biddingWindowId: string;
+  orderIds: string[];
+  totalBids: number;
+  expiredAt: Date;
+}
+
+export interface BidClosedEvent extends BaseEvent {
+  type: EventType.BID_CLOSED;
+  biddingWindowId: string;
+  orderIds: string[];
+  closedAt: Date;
+  outcome: 'winner_selected' | 'expired' | 'cancelled' | 'no_bids';
+  winningBidId?: string;
+}
+
+export interface BidCancelledEvent extends BaseEvent {
+  type: EventType.BID_CANCELLED;
+  bidId: string;
+  biddingWindowId: string;
+  porterId: string;
+  cancelledAt: Date;
+  reason: string;
 }
 
 /**
@@ -480,6 +561,13 @@ export interface UserUpdatedEvent extends BaseEvent {
   updatedAt: Date;
 }
 
+export interface OrderCancelledEvent extends BaseEvent {
+  type: EventType.ORDER_CANCELLED;
+  orderId: string;
+  cancelledAt: Date;
+  reason: string;
+}
+
 /**
  * Event union type (includes legacy and new events for backward compatibility)
  */
@@ -507,7 +595,15 @@ export type DomainEvent =
   | UserUpdatedEvent
   | PricingRulesChangedEvent
   | PriceSnapshotPersistedEvent
-  | PriceEstimateRequestedEvent;
+  | PriceEstimateRequestedEvent
+  | BidOpenedEvent
+  | BidPlacedEvent
+  | BidAcceptedEvent
+  | BidWinnerSelectedEvent
+  | BidExpiredEvent
+  | BidClosedEvent
+  | BidCancelledEvent
+  | OrderCancelledEvent;
 
 /**
  * ========================================
