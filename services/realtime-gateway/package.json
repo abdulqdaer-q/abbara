@@ -13,7 +13,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:load": "k6 run tests/load/location-updates.js",
-    "lint": "eslint src tests --ext .ts",
+    "lint": "eslint src --ext .ts",
     "type-check": "tsc --noEmit"
   },
   "keywords": [

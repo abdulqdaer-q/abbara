@@ -52,8 +52,8 @@ export async function handlePorterEvent(
 }
 
 async function handlePorterLocationUpdated(
-  event: { [key: string]: unknown },
-  deliveryService: NotificationDeliveryService
+  _event: { [key: string]: unknown },
+  _deliveryService: NotificationDeliveryService
 ): Promise<void> {
   // Location updates are typically handled via WebSocket/realtime service
   // Not sending push notifications for every location update to avoid spam

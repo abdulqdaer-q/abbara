@@ -1,7 +1,7 @@
 import { TRPCError } from '@trpc/server';
-import { Bid, BiddingWindow, BidStrategy, Prisma } from '@prisma/client';
+import { Bid, BiddingWindow, Prisma } from '@prisma/client';
 import { getPrismaClient } from '../lib/db';
-import { getRedisClient, RedisLock, getRedisLock } from '../lib/redis';
+import { getRedisClient, getRedisLock } from '../lib/redis';
 import { publishEvent } from '../lib/kafka';
 import { logger } from '../lib/logger';
 import {
@@ -12,9 +12,8 @@ import {
   BidWinnerSelectedEvent,
   BidClosedEvent,
   BidCancelledEvent,
-  BidExpiredEvent,
 } from '@movenow/common';
-import { strategyEngine, PorterMetadata } from './strategyEngine';
+import { strategyEngine } from './strategyEngine';
 import { validatePorterEligibility } from '../middleware/auth';
 import {
   biddingWindowsTotal,
@@ -573,7 +572,7 @@ export class BiddingService {
       winningBid?: Bid;
     };
   }> {
-    const { biddingWindowId, actor, correlationId } = params;
+    const { biddingWindowId, correlationId } = params;
 
     const window = await this.getBiddingWindow(biddingWindowId);
 

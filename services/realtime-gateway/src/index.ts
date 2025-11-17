@@ -50,7 +50,7 @@ async function bootstrap() {
   // Readiness probe
   app.get('/ready', async (req, res) => {
     try {
-      const redisConnected = await redisService.isUserOnline('health-check');
+      await redisService.isUserOnline('health-check');
       const kafkaConnected = kafkaService.isReady();
 
       if (kafkaConnected) {

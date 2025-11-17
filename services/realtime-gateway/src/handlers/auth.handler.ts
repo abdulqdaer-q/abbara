@@ -1,11 +1,10 @@
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import { SocketEvent } from '@movenow/common';
 import { AuthenticatedSocket, SocketUserData } from '../types';
 import { redisService } from '../services/redis.service';
 import { metricsService } from '../services/metrics.service';
-import { logger, createLogger } from '../lib/logger';
+import { createLogger } from '../lib/logger';
 import { v4 as uuidv4 } from 'uuid';
-import { config } from '../config';
 
 export class AuthHandler {
   constructor(private io: Server) {}
@@ -170,7 +169,7 @@ export class AuthHandler {
   /**
    * Handle heartbeat
    */
-  async handleHeartbeat(socket: AuthenticatedSocket, payload: any): Promise<void> {
+  async handleHeartbeat(socket: AuthenticatedSocket, _payload: any): Promise<void> {
     // Update last activity timestamp
     try {
       const userData = await redisService.getSocketUser(socket.id);

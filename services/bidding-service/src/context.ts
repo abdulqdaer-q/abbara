@@ -26,7 +26,7 @@ export interface Context {
  */
 export async function createContext({
   req,
-  res,
+  _res,
 }: CreateExpressContextOptions): Promise<Context> {
   const correlationId = extractCorrelationId(req.headers);
 

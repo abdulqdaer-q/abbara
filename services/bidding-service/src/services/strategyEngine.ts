@@ -90,8 +90,8 @@ export class StrategyEngine {
 
       // Sort by score descending and assign ranks
       evaluations.sort((a, b) => b.score - a.score);
-      evaluations.forEach((eval, index) => {
-        eval.rank = index + 1;
+      evaluations.forEach((evaluation, index) => {
+        evaluation.rank = index + 1;
       });
 
       logger.debug('Bids evaluated', {
@@ -213,8 +213,6 @@ export class StrategyEngine {
     estimatedScore: number;
     totalBids: number;
   }> {
-    const params = this.parseStrategyParameters(strategy.parameters);
-
     // Create a mock bid for evaluation
     const mockBid: BidWithMetadata = {
       id: 'preview',

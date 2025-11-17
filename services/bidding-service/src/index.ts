@@ -137,7 +137,7 @@ class BiddingServer {
         err: Error,
         req: express.Request,
         res: express.Response,
-        next: express.NextFunction
+        _next: express.NextFunction
       ) => {
         logger.error('Unhandled error', {
           error: err.message,

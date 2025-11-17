@@ -8,7 +8,7 @@ import { getPrismaClient } from './lib/db';
  * Create tRPC context for each request
  * This runs for every request and provides the context to all procedures
  */
-export async function createContext({ req, res }: CreateExpressContextOptions): Promise<Context> {
+export async function createContext({ req, _res }: CreateExpressContextOptions): Promise<Context> {
   const correlationId = getOrCreateCorrelationId(req);
   const logger = createLogger(correlationId);
 

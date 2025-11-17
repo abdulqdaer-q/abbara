@@ -1,5 +1,4 @@
 import { Registry, Counter, Gauge, Histogram } from 'prom-client';
-import { config } from '../config';
 import { logger } from '../lib/logger';
 
 export class MetricsService {

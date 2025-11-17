@@ -13,7 +13,7 @@ export interface Context {
 /**
  * Create context for each request
  */
-export function createContext({ req, res }: CreateExpressContextOptions): Context {
+export function createContext({ req, _res }: CreateExpressContextOptions): Context {
   // Extract correlation ID from header or generate new one
   const correlationId = (req.headers['x-correlation-id'] as string) || crypto.randomUUID();
 
