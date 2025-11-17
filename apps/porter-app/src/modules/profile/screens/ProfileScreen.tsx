@@ -44,7 +44,11 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
         <Text style={styles.menuItemText}>Verification Documents</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.menuItem}>
+      <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Ratings')}>
+        <Text style={styles.menuItemText}>Ratings & Reviews</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Settings')}>
         <Text style={styles.menuItemText}>Settings</Text>
       </TouchableOpacity>
 
