@@ -1,0 +1,60 @@
+{
+  "name": "@movenow/pricing",
+  "version": "1.0.0",
+  "description": "MoveNow Pricing Service - Fare estimation and pricing snapshot management",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc && prisma generate",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src tests --ext .ts",
+    "type-check": "tsc --noEmit",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "prisma:reset": "prisma migrate reset"
+  },
+  "keywords": ["trpc", "pricing", "microservices", "movenow"],
+  "author": "MoveNow Team",
+  "license": "MIT",
+  "dependencies": {
+    "@trpc/server": "^10.45.0",
+    "@prisma/client": "^5.7.1",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "zod": "^3.22.4",
+    "ioredis": "^5.3.2",
+    "winston": "^3.11.0",
+    "dotenv": "^16.3.1",
+    "superjson": "^2.2.1",
+    "node-cache": "^5.1.2",
+    "@googlemaps/google-maps-services-js": "^3.3.42",
+    "cron": "^3.1.6"
+  },
+  "devDependencies": {
+    "@movenow/common": "workspace:*",
+    "@trpc/client": "^10.45.0",
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/node": "^20.10.6",
+    "@types/jest": "^29.5.11",
+    "@types/supertest": "^6.0.2",
+    "@typescript-eslint/eslint-plugin": "^6.17.0",
+    "@typescript-eslint/parser": "^6.17.0",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3",
+    "supertest": "^6.3.3",
+    "prisma": "^5.7.1",
+    "redis-mock": "^0.56.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

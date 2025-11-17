@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: admin-management-postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: movenow_admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Kafka (with Zookeeper)
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: admin-management-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: admin-management-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  # Admin Management Service
+  admin-management:
+    build:
+      context: ../../
+      dockerfile: services/admin-management/Dockerfile
+    container_name: admin-management-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://admin:admin123@postgres:5432/movenow_admin
+      JWT_SECRET: development-secret-key-minimum-32-characters-required
+      JWT_EXPIRES_IN: 24h
+      KAFKA_BROKERS: kafka:9092
+      KAFKA_CLIENT_ID: admin-management-service
+      KAFKA_GROUP_ID: admin-management-consumer-group
+      SUPER_ADMIN_EMAIL: admin@movenow.com
+      DEFAULT_ADMIN_PASSWORD: changeme123
+      ENABLE_ANALYTICS: "true"
+      ENABLE_AUDIT_LOGS: "true"
+      LOG_LEVEL: debug
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX_REQUESTS: 100
+    volumes:
+      - ./src:/app/services/admin-management/src
+      - ./prisma:/app/services/admin-management/prisma
+    command: sh -c "pnpm prisma:migrate && pnpm db:seed && pnpm dev"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:

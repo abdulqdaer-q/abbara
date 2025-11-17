@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bidding-service-config
+  namespace: movenow
+data:
+  # Redis configuration
+  redis-url: "redis://redis-service:6379"
+  redis-db: "0"
+
+  # Kafka configuration
+  kafka-brokers: "kafka-service:9092"
+  kafka-client-id: "bidding-service"
+  kafka-group-id: "bidding-service-group"
+
+  # Bidding configuration
+  default-bidding-window-duration-sec: "300"
+  default-min-bid-cents: "1000"
+  default-strategy-id: "weighted-score-v1"
+  max-bids-per-porter: "5"
+  bid-acceptance-lock-ttl-sec: "30"
+
+  # Observability
+  log-level: "info"
+  metrics-port: "9090"
+  enable-tracing: "true"
+
+  # Data retention
+  bid-retention-days: "90"
+  audit-retention-days: "365"

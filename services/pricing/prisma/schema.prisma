@@ -1,0 +1,299 @@
+// Prisma schema for MoveNow Pricing Service
+// Supports pricing rules, snapshots, audit trails, and versioning
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Pricing rule types
+enum RuleType {
+  BASE_FARE
+  PER_KM
+  PER_MINUTE
+  PORTER_FEE
+  ITEM_SIZE_SURCHARGE
+  MINIMUM_FARE
+  PEAK_MULTIPLIER
+  GEO_MULTIPLIER
+  PROMO_DISCOUNT
+  SERVICE_FEE
+  TAX
+  MULTI_STOP_FEE
+  CANCELLATION_FEE
+  WAIT_FEE
+}
+
+// Customer types for rule applicability
+enum CustomerType {
+  CONSUMER
+  BUSINESS
+  ENTERPRISE
+}
+
+// Vehicle types (matching common package)
+enum VehicleType {
+  SEDAN
+  SUV
+  VAN
+  TRUCK
+}
+
+// Currency codes
+enum Currency {
+  USD
+  EUR
+  GBP
+}
+
+// Rule status
+enum RuleStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+// Main pricing rule model with versioning
+model PricingRule {
+  id          String     @id @default(cuid())
+  version     Int        @default(1)
+  name        String
+  description String?
+  ruleType    RuleType
+  priority    Int        @default(0) // Higher priority rules evaluated first
+  enabled     Boolean    @default(true)
+  status      RuleStatus @default(ACTIVE)
+
+  // Applicability constraints
+  vehicleTypes   VehicleType[]
+  customerTypes  CustomerType[] @default([CONSUMER])
+  minOrderValue  Int?           // cents
+  maxOrderValue  Int?           // cents
+
+  // Time-based applicability
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  timeWindows   TimeWindow[] // For peak/surge pricing
+
+  // Geographic applicability (optional)
+  geoZones GeoZone[]
+
+  // Rule value configuration (flexible JSON for different rule types)
+  // Examples:
+  // - BASE_FARE: { "amountCents": 500 }
+  // - PER_KM: { "ratePerKm": 150, "tiers": [{"upToKm": 5, "rate": 100}, {"upToKm": 20, "rate": 150}] }
+  // - PORTER_FEE: { "perPorter": 800 }
+  // - PEAK_MULTIPLIER: { "multiplier": 1.5 }
+  // - PROMO_DISCOUNT: { "type": "percentage", "value": 10 } or { "type": "fixed", "value": 500 }
+  config Json
+
+  // Audit fields
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  createdBy    String
+  lastModifiedBy String
+
+  // Relations
+  snapshots        PricingSnapshot[]
+  auditLogs        RuleAuditLog[]
+  previousVersion  PricingRule?      @relation("RuleVersions", fields: [previousVersionId], references: [id])
+  previousVersionId String?
+  nextVersions     PricingRule[]     @relation("RuleVersions")
+
+  @@index([ruleType, enabled])
+  @@index([effectiveFrom, effectiveTo])
+  @@index([priority])
+}
+
+// Time windows for peak/surge pricing
+model TimeWindow {
+  id            String      @id @default(cuid())
+  pricingRuleId String
+  pricingRule   PricingRule @relation(fields: [pricingRuleId], references: [id], onDelete: Cascade)
+
+  // Day of week (0 = Sunday, 6 = Saturday)
+  dayOfWeek Int[]
+
+  // Time range (stored as minutes from midnight)
+  startTime Int // e.g., 540 = 9:00 AM
+  endTime   Int // e.g., 1080 = 6:00 PM
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([pricingRuleId])
+}
+
+// Geographic zones for zone-based pricing
+model GeoZone {
+  id            String      @id @default(cuid())
+  pricingRuleId String
+  pricingRule   PricingRule @relation(fields: [pricingRuleId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+
+  // Polygon coordinates stored as GeoJSON
+  // Example: { "type": "Polygon", "coordinates": [[[lng, lat], [lng, lat], ...]] }
+  polygon Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([pricingRuleId])
+}
+
+// Immutable pricing snapshot for orders
+model PricingSnapshot {
+  id                String   @id @default(cuid())
+  orderId           String   @unique
+  snapshotVersion   Int      @default(1)
+  idempotencyKey    String?  @unique
+
+  // Order context at time of pricing
+  pickupLat         Float
+  pickupLng         Float
+  pickupAddress     String
+  dropoffLat        Float
+  dropoffLng        Float
+  dropoffAddress    String
+  vehicleType       VehicleType
+  porterCount       Int
+  scheduledAt       DateTime?
+
+  // Distance and time inputs
+  distanceMeters    Int
+  durationSeconds   Int
+
+  // Pricing breakdown (all amounts in cents)
+  baseFareCents     Int
+  distanceFareCents Int
+  timeFareCents     Int
+  porterFeesCents   Int
+  surchargesCents   Int
+  subtotalCents     Int
+  discountCents     Int
+  taxCents          Int
+  serviceFeesCents  Int
+  totalCents        Int
+  currency          Currency @default(USD)
+
+  // Detailed breakdown with line items
+  // Example: [{ "type": "BASE_FARE", "ruleId": "xyz", "amountCents": 500, "description": "Base fare" }]
+  breakdown Json
+
+  // Rules applied (for audit)
+  rulesApplied Json // Array of { ruleId, ruleVersion, ruleName, ruleType }
+
+  // Metadata
+  estimatedAt  DateTime @default(now())
+  capturedAt   DateTime?
+  customerType CustomerType @default(CONSUMER)
+  promoCode    String?
+
+  // Relations
+  appliedRules PricingRule[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([estimatedAt])
+  @@index([vehicleType])
+}
+
+// Audit log for rule changes
+model RuleAuditLog {
+  id            String      @id @default(cuid())
+  pricingRuleId String
+  pricingRule   PricingRule @relation(fields: [pricingRuleId], references: [id], onDelete: Cascade)
+
+  action      String // CREATED, UPDATED, DELETED, ACTIVATED, DEACTIVATED
+  changedBy   String
+  changeData  Json   // Previous and new values
+  reason      String?
+
+  timestamp DateTime @default(now())
+
+  @@index([pricingRuleId])
+  @@index([timestamp])
+}
+
+// Promo codes (simple version - can be expanded)
+model PromoCode {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  description String?
+
+  // Discount configuration
+  discountType  String // "percentage" or "fixed"
+  discountValue Int    // percentage (1-100) or cents
+
+  // Applicability
+  customerTypes  CustomerType[]
+  vehicleTypes   VehicleType[]
+  minOrderValue  Int?           // cents
+  maxDiscount    Int?           // cents (for percentage discounts)
+
+  // Usage limits
+  maxUses        Int?
+  usedCount      Int            @default(0)
+  maxUsesPerUser Int?           @default(1)
+
+  // Validity
+  validFrom DateTime
+  validUntil DateTime?
+  enabled   Boolean  @default(true)
+
+  // Audit
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+
+  @@index([code])
+  @@index([validFrom, validUntil])
+}
+
+// Distance/time cache for maps provider results
+model DistanceCache {
+  id String @id @default(cuid())
+
+  // Route identifiers (hashed)
+  originLat  Float
+  originLng  Float
+  destLat    Float
+  destLng    Float
+  routeHash  String @unique // Hash of origin + destination
+
+  // Cached values
+  distanceMeters  Int
+  durationSeconds Int
+  polyline        String? // Encoded polyline
+
+  // Cache metadata
+  provider   String   @default("google_maps")
+  cachedAt   DateTime @default(now())
+  expiresAt  DateTime
+  hitCount   Int      @default(0)
+  lastHitAt  DateTime @default(now())
+
+  @@index([routeHash])
+  @@index([expiresAt])
+}
+
+// Metrics tracking for pricing service
+model PricingMetrics {
+  id String @id @default(cuid())
+
+  metricType String // "estimate_requested", "snapshot_persisted", "rule_applied", etc.
+  metricData Json
+
+  timestamp DateTime @default(now())
+
+  @@index([metricType, timestamp])
+}

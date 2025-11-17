@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: porters-config
+data:
+  redis-url: "redis://redis-service:6379"
+  kafka-brokers: "kafka-service:9092"
+  files-service-url: "http://files-service:4010"
+  wallets-service-url: "http://wallets-service:4004"
+  notifications-service-url: "http://notifications-service:4006"
+  auth-service-url: "http://auth-service:4001"

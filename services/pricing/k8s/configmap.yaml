@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pricing-config
+  labels:
+    app: pricing-service
+data:
+  DEFAULT_CURRENCY: "USD"
+  DEFAULT_TAX_RATE: "0.08"
+  DEFAULT_SERVICE_FEE_RATE: "0.05"
+  MIN_FARE_CENTS: "500"
+  MAX_SURGE_MULTIPLIER: "3.0"
+  FALLBACK_SPEED_KMH: "40"
+  ESTIMATE_RATE_LIMIT_PER_MINUTE: "100"
+  REDIS_CACHE_TTL_SECONDS: "3600"
+  DISTANCE_CACHE_TTL_SECONDS: "86400"
+  ENABLE_METRICS: "true"
+  ENABLE_TRACING: "true"
+  LOG_LEVEL: "info"

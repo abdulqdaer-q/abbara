@@ -1,0 +1,129 @@
+// Prisma schema for Auth & Users Service
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum UserRole {
+  CUSTOMER
+  PORTER
+  ADMIN
+}
+
+enum VerificationStatus {
+  PENDING
+  UNDER_REVIEW
+  VERIFIED
+  REJECTED
+  RESUBMIT_REQUIRED
+}
+
+// User model - Core user entity
+model User {
+  id                    String    @id @default(cuid())
+  email                 String?   @unique
+  phone                 String?   @unique
+  passwordHash          String
+  displayName           String
+  avatarUrl             String?
+  role                  UserRole  @default(CUSTOMER)
+  emailVerified         Boolean   @default(false)
+  phoneVerified         Boolean   @default(false)
+  emailVerificationToken String?
+  phoneVerificationToken String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  // Relations
+  refreshTokens         RefreshToken[]
+  porterProfile         PorterProfile?
+
+  // Indexes for common queries
+  @@index([email])
+  @@index([phone])
+  @@index([role])
+  @@index([createdAt])
+  @@map("users")
+}
+
+// RefreshToken model - Manages refresh tokens and sessions
+model RefreshToken {
+  id                String   @id @default(cuid())
+  tokenHash         String   @unique
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Device tracking metadata
+  deviceId          String?
+  ipAddress         String?
+  userAgent         String?
+
+  // Token state
+  revoked           Boolean  @default(false)
+  revokedAt         DateTime?
+  expiresAt         DateTime
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Indexes
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+// PorterProfile model - Porter-specific data and verification
+model PorterProfile {
+  id                    String              @id @default(cuid())
+  userId                String              @unique
+  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  verificationStatus    VerificationStatus  @default(PENDING)
+
+  // Documents metadata (stored as JSON)
+  // Format: [{ type: 'drivers_license', url: 's3://...', uploadedAt: '...' }]
+  documentsMetadata     Json?
+
+  // Porter rating (0-5)
+  rating                Float               @default(0.0)
+  totalRatings          Int                 @default(0)
+
+  // Verification timestamps
+  verificationRequestedAt DateTime?
+  verifiedAt            DateTime?
+  rejectedAt            DateTime?
+  rejectionReason       String?
+
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  // Indexes
+  @@index([userId])
+  @@index([verificationStatus])
+  @@index([rating])
+  @@map("porter_profiles")
+}
+
+// Password Reset Tokens
+model PasswordResetToken {
+  id          String   @id @default(cuid())
+  userId      String
+  tokenHash   String   @unique
+  expiresAt   DateTime
+  used        Boolean  @default(false)
+  usedAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
+}

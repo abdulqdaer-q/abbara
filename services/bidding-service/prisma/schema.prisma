@@ -1,0 +1,170 @@
+// Prisma schema for Bidding Service
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Bidding window represents an active bidding session for one or more orders
+model BiddingWindow {
+  id            String   @id @default(uuid())
+  orderIds      String[] // Array of order IDs participating in this bidding window
+  status        BiddingWindowStatus @default(OPEN)
+  strategyId    String
+  strategy      BidStrategy @relation(fields: [strategyId], references: [id])
+
+  // Configuration stored as JSON for flexibility
+  configuration Json // { filters, minBidCents, reservePriceCents, maxBidsPerPorter, etc. }
+
+  // Timestamps
+  openAt        DateTime
+  expiresAt     DateTime
+  closedAt      DateTime?
+
+  // Audit fields
+  createdAt     DateTime @default(now())
+  createdBy     String   // User or system ID that created the window
+  correlationId String?
+
+  // Relations
+  bids          Bid[]
+
+  @@index([status, expiresAt])
+  @@index([createdAt])
+  @@map("bidding_windows")
+}
+
+enum BiddingWindowStatus {
+  OPEN
+  CLOSED
+  CANCELLED
+}
+
+// Individual bid from a porter
+model Bid {
+  id                      String   @id @default(uuid())
+  biddingWindowId         String
+  biddingWindow           BiddingWindow @relation(fields: [biddingWindowId], references: [id], onDelete: Cascade)
+
+  porterId                String
+  amountCents             Int
+  estimatedArrivalMinutes Int
+
+  // Additional metadata (e.g., proposed team size, vehicle details, etc.)
+  metadata                Json?
+
+  status                  BidStatus @default(PLACED)
+
+  // Timestamps
+  placedAt                DateTime @default(now())
+  acceptedAt              DateTime?
+  cancelledAt             DateTime?
+  expiredAt               DateTime?
+
+  // Idempotency and tracing
+  idempotencyKey          String   @unique
+  correlationId           String?
+
+  // Audit trail
+  cancelReason            String?
+  acceptedBy              String?  // User or system ID that accepted the bid
+
+  // Relations
+  auditEvents             BidAuditEvent[]
+
+  @@index([biddingWindowId, status])
+  @@index([porterId, status])
+  @@index([placedAt])
+  @@index([idempotencyKey])
+  @@map("bids")
+}
+
+enum BidStatus {
+  PLACED
+  ACCEPTED
+  CANCELLED
+  EXPIRED
+}
+
+// Pluggable scoring/evaluation strategy
+model BidStrategy {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  description     String
+  version         Int      @default(1)
+
+  // Strategy parameters stored as JSON (weights for price, ETA, rating, etc.)
+  parameters      Json // { priceWeight, etaWeight, ratingWeight, reliabilityWeight, etc. }
+
+  // Lifecycle
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  effectiveFrom   DateTime @default(now())
+  deprecatedAt    DateTime?
+
+  // Relations
+  biddingWindows  BiddingWindow[]
+
+  @@index([isActive, effectiveFrom])
+  @@map("bid_strategies")
+}
+
+// Append-only audit log for bid lifecycle events
+model BidAuditEvent {
+  id              String   @id @default(uuid())
+  bidId           String
+  bid             Bid      @relation(fields: [bidId], references: [id], onDelete: Cascade)
+
+  eventType       BidEventType
+  payload         Json     // Full event data
+
+  timestamp       DateTime @default(now())
+  actor           String?  // User or system ID that triggered the event
+  correlationId   String?
+
+  @@index([bidId, timestamp])
+  @@index([eventType, timestamp])
+  @@map("bid_audit_events")
+}
+
+enum BidEventType {
+  BID_PLACED
+  BID_ACCEPTED
+  BID_CANCELLED
+  BID_EXPIRED
+  BID_EVALUATED
+}
+
+// Aggregated statistics per bidding window for analytics
+model BidStatistics {
+  id                  String   @id @default(uuid())
+  biddingWindowId     String   @unique
+  orderId             String
+
+  // Aggregate metrics
+  totalBids           Int
+  uniqueBidders       Int
+  topBidAmountCents   Int?
+  averageBidCents     Int?
+  medianBidCents      Int?
+
+  // Timing metrics
+  timeToFirstBidMs    Int?
+  timeToWinnerMs      Int?
+
+  // Outcome
+  winningBidId        String?
+  winningPorterId     String?
+  winningAmountCents  Int?
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([createdAt])
+  @@map("bid_statistics")
+}
