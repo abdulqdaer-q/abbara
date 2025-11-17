@@ -8,12 +8,14 @@ import {
   Tag,
   BarChart3,
   Settings,
+  UserCheck,
 } from 'lucide-react';
 
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/users', icon: Users, label: 'Users' },
   { to: '/orders', icon: Package, label: 'Orders' },
+  { to: '/porters', icon: UserCheck, label: 'Porter Verification' },
   { to: '/vehicles', icon: Car, label: 'Vehicles' },
   { to: '/promos', icon: Tag, label: 'Promo Codes' },
   { to: '/analytics', icon: BarChart3, label: 'Analytics' },

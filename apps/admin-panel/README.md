@@ -1,87 +1,67 @@
 # MoveNow Admin Panel
 
-Web-based admin dashboard for managing the MoveNow platform.
+A comprehensive, production-ready admin dashboard for the MoveNow platform. Built with React, TypeScript, Redux, TailwindCSS, and tRPC.
 
 ## Features
 
-- **Dashboard**: Overview of key metrics and recent activity
-- **User Management**: Manage customers and porters
-- **Order Management**: View, filter, and manage orders
-- **Vehicle & Pricing**: Configure vehicle types and pricing
-- **Promo Codes**: Create and manage promotional codes
-- **Analytics**: Platform analytics and reporting
-- **Settings**: Configure platform settings
+### 📊 **Dashboard**
+- Real-time analytics and system health monitoring
+- Key metrics: total users, orders, revenue, and pending verifications
+- Quick stats overview with visual indicators
+- System health status for all services
+
+### 👥 **User Management**
+- List all users with advanced filtering (role, status, search)
+- View detailed user information
+- Update user status (activate, suspend)
+- Pagination support for large datasets
+
+### 📦 **Orders Management**
+- View all orders with status filtering
+- Track order lifecycle from pending to completed
+- Admin intervention capabilities
+- Pagination and search functionality
+
+### 🚚 **Porter Verification**
+- Review pending porter documents
+- Approve or reject verification requests
+- Document type tracking
+- Review notes and audit trail
+
+### 🚗 **Vehicle Types**
+- Manage vehicle type configurations
+- Set pricing multipliers and max load capacity
+- Full CRUD operations
+
+### 🎟️ **Promo Codes**
+- Create and manage promotional codes
+- Track usage and limits
+- Set validity periods
+- Support for percentage and fixed discounts
+
+### ⚙️ **Platform Settings**
+- Configure system-wide settings
+- Real-time updates with versioning
+- Audit trail for all changes
 
 ## Tech Stack
 
-- React 18
-- TypeScript
-- Vite
-- TailwindCSS
-- Redux Toolkit
-- React Router v6
-- React Query
-- Recharts
-- Lucide Icons
+- React 18 + TypeScript
+- Redux Toolkit for state management
+- tRPC + React Query for API
+- TailwindCSS for styling
+- Vite for build tooling
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js 18+
-- pnpm
-
-### Installation
-
 ```bash
-# Install dependencies
-pnpm install
-
-# Start development server
-pnpm dev
-
-# Build for production
-pnpm build
-
-# Preview production build
-pnpm preview
+cd apps/admin-panel
+npm install
+npm run dev
 ```
 
-## Project Structure
+Login with any email containing "admin" (e.g., admin@movenow.com)
 
-```
-src/
-├── components/       # Reusable components
-│   ├── layout/      # Layout components (Sidebar, Header)
-│   ├── common/      # Common UI components
-│   └── ui/          # UI primitives
-├── modules/          # Feature modules
-│   ├── dashboard/   # Dashboard module
-│   ├── users/       # User management
-│   ├── orders/      # Order management
-│   ├── vehicles/    # Vehicle & pricing
-│   ├── promos/      # Promo codes
-│   ├── analytics/   # Analytics
-│   └── settings/    # Settings
-├── services/        # API services
-├── store/           # Redux store
-├── hooks/           # Custom hooks
-├── utils/           # Utility functions
-└── types/           # TypeScript types
-```
+## License
 
-## Available Scripts
-
-- `pnpm dev` - Start development server (port 3001)
-- `pnpm build` - Build for production
-- `pnpm preview` - Preview production build
-- `pnpm test` - Run tests
-- `pnpm lint` - Lint code
-
-## Environment Variables
-
-Configure backend API endpoint in `.env`:
-
-```
-VITE_API_URL=http://localhost:3000
-```
+MIT

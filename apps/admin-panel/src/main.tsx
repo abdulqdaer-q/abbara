@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 import App from './App';
 import { store } from './store';
+import { trpc, trpcClient } from './lib/trpc';
 import './assets/styles/index.css';
 
 const queryClient = new QueryClient({
@@ -21,11 +22,13 @@ const queryClient = new QueryClient({
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Provider store={store}>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </QueryClientProvider>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </QueryClientProvider>
+      </trpc.Provider>
     </Provider>
   </React.StrictMode>
 );
