@@ -8,18 +8,29 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
 import { trpc, trpcClient } from './src/services/trpc';
-import { useAuthStore } from './src/store/useAuthStore';
+import { useAuthStore } from './src/store/usePersistedAuthStore';
+import { useOrderStore } from './src/store/usePersistedOrderStore';
 import { AuthNavigator } from './src/navigation/AuthNavigator';
 import { MainNavigator } from './src/navigation/MainNavigator';
 import { notificationService } from './src/services/notification.service';
+import { offlineQueueService } from './src/services/offline-queue.service';
+import { NetworkStatusBanner } from './src/components/NetworkStatusBanner';
+import { useNetworkStatus } from './src/hooks/useNetworkStatus';
 import { theme } from './src/utils/theme';
 
-// Create React Query client
+// Create React Query client with offline support
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 2,
       staleTime: 1000 * 60 * 5, // 5 minutes
+      cacheTime: 1000 * 60 * 60 * 24, // 24 hours - keep data in cache longer for offline use
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true, // Refetch when connection is restored
+      networkMode: 'offlineFirst', // Try cache first, then network
+    },
+    mutations: {
+      networkMode: 'offlineFirst',
     },
   },
 });
@@ -27,12 +38,16 @@ const queryClient = new QueryClient({
 export default function App() {
   const [isAppReady, setIsAppReady] = useState(false);
   const { isAuthenticated, refreshAuth } = useAuthStore();
+  const { loadFromCache } = useOrderStore();
 
   useEffect(() => {
     async function initialize() {
       try {
         // Initialize authentication state
         await refreshAuth();
+
+        // Load cached orders for offline access
+        await loadFromCache();
 
         // Request notification permissions
         await notificationService.requestPermissions();
@@ -47,6 +62,19 @@ export default function App() {
     }
 
     initialize();
+  }, []);
+
+  // Setup network status listener for offline queue sync
+  useEffect(() => {
+    const { isConnected } = useNetworkStatus();
+
+    if (isConnected && offlineQueueService.hasPendingActions()) {
+      // Connection restored and we have pending actions - sync them
+      console.log('Connection restored, syncing offline queue...');
+      offlineQueueService.sync().catch((error) => {
+        console.error('Failed to sync offline queue:', error);
+      });
+    }
   }, []);
 
   // Setup notification listeners
@@ -89,6 +117,7 @@ export default function App() {
               <NavigationContainer>
                 <StatusBar style="auto" />
                 {isAuthenticated ? <MainNavigator /> : <AuthNavigator />}
+                <NetworkStatusBanner />
               </NavigationContainer>
             </PaperProvider>
           </QueryClientProvider>
