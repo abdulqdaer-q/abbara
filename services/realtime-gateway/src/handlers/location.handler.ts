@@ -35,7 +35,7 @@ export class LocationHandler {
 
     try {
       // Validate role
-      if (socket.role !== 'porter') {
+      if (socket.role !== 'PORTER') {
         socket.emit(SocketEvent.LOCATION_ERROR, {
           error: 'FORBIDDEN',
           message: 'Only porters can send location updates',

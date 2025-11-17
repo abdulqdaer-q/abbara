@@ -49,7 +49,7 @@ export class AuthHandler {
       metricsService.recordConnection(socket.nsp.name);
 
       // Publish presence event if porter
-      if (socket.role === 'porter') {
+      if (socket.role === 'PORTER') {
         socket.to('admin').emit(SocketEvent.PORTER_ONLINE, {
           porterId: socket.userId,
           timestamp: Date.now(),
@@ -94,7 +94,7 @@ export class AuthHandler {
       metricsService.recordDisconnection(socket.nsp.name, reason);
 
       // Publish presence event if porter
-      if (socket.role === 'porter') {
+      if (socket.role === 'PORTER') {
         const remainingSockets = await redisService.getUserSockets(socket.userId);
         if (remainingSockets.length === 0) {
           socket.to('admin').emit(SocketEvent.PORTER_OFFLINE, {

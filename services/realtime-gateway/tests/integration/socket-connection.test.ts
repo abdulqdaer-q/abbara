@@ -36,7 +36,7 @@ describe('Socket Connection Integration', () => {
     });
 
     it('should accept connection with valid token', (done) => {
-      const token = authService.generateSocketToken('test-user-123', 'client');
+      const token = authService.generateSocketToken('test-user-123', 'CUSTOMER');
 
       clientSocket = ioClient(`${serverUrl}/client`, {
         auth: { token },
@@ -45,7 +45,7 @@ describe('Socket Connection Integration', () => {
       clientSocket.on(SocketEvent.AUTHENTICATED, (response) => {
         expect(response.success).toBe(true);
         expect(response.userId).toBe('test-user-123');
-        expect(response.role).toBe('client');
+        expect(response.role).toBe('CUSTOMER');
         done();
       });
     });
@@ -53,7 +53,7 @@ describe('Socket Connection Integration', () => {
 
   describe('Heartbeat', () => {
     it('should respond to heartbeat', (done) => {
-      const token = authService.generateSocketToken('test-user-456', 'client');
+      const token = authService.generateSocketToken('test-user-456', 'CUSTOMER');
 
       clientSocket = ioClient(`${serverUrl}/client`, {
         auth: { token },
@@ -74,7 +74,7 @@ describe('Socket Connection Integration', () => {
 
   describe('Porter namespace', () => {
     it('should allow porter to connect to porter namespace', (done) => {
-      const token = authService.generateSocketToken('porter-123', 'porter');
+      const token = authService.generateSocketToken('porter-123', 'PORTER');
 
       clientSocket = ioClient(`${serverUrl}/porter`, {
         auth: { token },
@@ -82,7 +82,7 @@ describe('Socket Connection Integration', () => {
 
       clientSocket.on(SocketEvent.AUTHENTICATED, (response) => {
         expect(response.success).toBe(true);
-        expect(response.role).toBe('porter');
+        expect(response.role).toBe('PORTER');
         done();
       });
     });
@@ -90,7 +90,7 @@ describe('Socket Connection Integration', () => {
 
   describe('Disconnection', () => {
     it('should handle graceful disconnection', (done) => {
-      const token = authService.generateSocketToken('test-user-789', 'client');
+      const token = authService.generateSocketToken('test-user-789', 'CUSTOMER');
 
       clientSocket = ioClient(`${serverUrl}/client`, {
         auth: { token },

@@ -82,7 +82,7 @@ export class JobOfferHandler {
 
     try {
       // Validate role
-      if (socket.role !== 'porter') {
+      if (socket.role !== 'PORTER') {
         socket.emit(SocketEvent.JOB_OFFER_ERROR, {
           error: 'FORBIDDEN',
           message: 'Only porters can accept job offers',
@@ -197,7 +197,7 @@ export class JobOfferHandler {
 
     try {
       // Validate role
-      if (socket.role !== 'porter') {
+      if (socket.role !== 'PORTER') {
         socket.emit(SocketEvent.JOB_OFFER_ERROR, {
           error: 'FORBIDDEN',
           message: 'Only porters can reject job offers',

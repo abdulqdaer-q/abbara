@@ -6,7 +6,7 @@ describe('AuthService', () => {
   describe('generateSocketToken', () => {
     it('should generate a valid socket token', () => {
       const userId = 'test-user-123';
-      const role = 'client' as const;
+      const role = 'CUSTOMER' as const;
 
       const token = authService.generateSocketToken(userId, role);
 
@@ -23,7 +23,7 @@ describe('AuthService', () => {
   describe('verifySocketToken', () => {
     it('should verify a valid socket token', () => {
       const userId = 'test-user-123';
-      const role = 'porter' as const;
+      const role = 'PORTER' as const;
 
       const token = authService.generateSocketToken(userId, role);
       const payload = authService.verifySocketToken(token);
@@ -42,7 +42,7 @@ describe('AuthService', () => {
 
     it('should return null for expired token', () => {
       const expiredToken = jwt.sign(
-        { userId: 'test', role: 'client' },
+        { userId: 'test', role: 'CUSTOMER' },
         config.jwt.socketSecret,
         { expiresIn: '0s' }
       );
@@ -58,7 +58,7 @@ describe('AuthService', () => {
   describe('verifyAccessToken', () => {
     it('should verify a valid access token', () => {
       const userId = 'test-user-456';
-      const role = 'admin' as const;
+      const role = 'ADMIN' as const;
 
       const token = jwt.sign(
         { userId, role },
@@ -75,7 +75,7 @@ describe('AuthService', () => {
 
     it('should return null for token with wrong secret', () => {
       const token = jwt.sign(
-        { userId: 'test', role: 'client' },
+        { userId: 'test', role: 'CUSTOMER' },
         'wrong-secret',
         { expiresIn: '15m' }
       );
@@ -88,7 +88,7 @@ describe('AuthService', () => {
   describe('verifyToken', () => {
     it('should verify socket token first', () => {
       const userId = 'test-user-789';
-      const role = 'client' as const;
+      const role = 'CUSTOMER' as const;
 
       const socketToken = authService.generateSocketToken(userId, role);
       const payload = authService.verifyToken(socketToken);
@@ -99,7 +99,7 @@ describe('AuthService', () => {
 
     it('should fallback to access token if socket token fails', () => {
       const userId = 'test-user-abc';
-      const role = 'porter' as const;
+      const role = 'PORTER' as const;
 
       const accessToken = jwt.sign(
         { userId, role },

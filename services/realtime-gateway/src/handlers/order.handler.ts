@@ -46,7 +46,7 @@ export class OrderHandler {
       // - Admin can subscribe to any order
       // For now, we'll allow any authenticated user (should be enhanced)
 
-      if (socket.role !== 'client' && socket.role !== 'porter' && socket.role !== 'admin') {
+      if (socket.role !== 'CUSTOMER' && socket.role !== 'PORTER' && socket.role !== 'ADMIN') {
         socket.emit(SocketEvent.SUBSCRIPTION_ERROR, {
           error: 'FORBIDDEN',
           message: 'Insufficient permissions to subscribe to order',

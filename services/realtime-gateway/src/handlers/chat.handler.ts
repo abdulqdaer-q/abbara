@@ -36,10 +36,10 @@ export class ChatHandler {
 
     try {
       // Validate role
-      if (socket.role !== 'client' && socket.role !== 'porter') {
+      if (socket.role !== 'CUSTOMER' && socket.role !== 'PORTER') {
         socket.emit(SocketEvent.CHAT_MESSAGE_ERROR, {
           error: 'FORBIDDEN',
-          message: 'Only clients and porters can send chat messages',
+          message: 'Only customers and porters can send chat messages',
         });
         return;
       }
