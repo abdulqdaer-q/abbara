@@ -1,4 +1,3 @@
-import { TRPCError } from '@trpc/server';
 import { appRouter } from '../../src/routers';
 import { UserRepository } from '../../src/repositories/userRepository';
 import { RefreshTokenRepository } from '../../src/repositories/refreshTokenRepository';
@@ -6,6 +5,30 @@ import { PasswordResetRepository } from '../../src/repositories/passwordResetRep
 
 // Mock dependencies
 jest.mock('../../src/utils/logger');
+
+// Mock argon2 to avoid native module issues
+jest.mock('argon2', () => ({
+  hash: jest.fn((password: string) => Promise.resolve(`hashed-${password}`)),
+  verify: jest.fn((hash: string, password: string) => {
+    return Promise.resolve(hash === `hashed-${password}`);
+  }),
+  argon2id: 2,
+}));
+
+// Mock Prisma Client types
+jest.mock('@prisma/client', () => ({
+  PrismaClient: jest.fn(),
+  UserRole: {
+    CUSTOMER: 'CUSTOMER',
+    PORTER: 'PORTER',
+    ADMIN: 'ADMIN',
+  },
+  VerificationStatus: {
+    PENDING: 'PENDING',
+    APPROVED: 'APPROVED',
+    REJECTED: 'REJECTED',
+  },
+}));
 
 const mockPrisma = {
   user: {
@@ -18,6 +41,8 @@ const mockPrisma = {
 
 const mockEventPublisher = {
   publish: jest.fn().mockResolvedValue(undefined),
+  publishBatch: jest.fn().mockResolvedValue(undefined),
+  disconnect: jest.fn().mockResolvedValue(undefined),
 };
 
 describe('Users Router Integration Tests', () => {
@@ -35,11 +60,17 @@ describe('Users Router Integration Tests', () => {
 
   const createCaller = (authContext?: any) => {
     const ctx = {
+      req: {} as any,
+      res: {} as any,
+      token: null,
+      prisma: mockPrisma,
       repositories: {
         users: userRepo,
         refreshTokens: refreshTokenRepo,
         passwordResets: passwordResetRepo,
-      },
+        porterProfiles: {} as any,
+        getPrisma: () => mockPrisma,
+      } as any,
       eventPublisher: mockEventPublisher,
       ipAddress: '127.0.0.1',
       userAgent: 'test-agent',

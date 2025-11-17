@@ -1,16 +1,22 @@
-import { TRPCError } from '@trpc/server';
 import { appRouter } from '../../src/routers';
-import { createContext } from '../../src/trpc/context';
 import { UserRepository } from '../../src/repositories/userRepository';
 import { RefreshTokenRepository } from '../../src/repositories/refreshTokenRepository';
 import { PasswordResetRepository } from '../../src/repositories/passwordResetRepository';
-import { hashPassword } from '../../src/utils/password';
-import { verifyRefreshToken } from '../../src/utils/jwt';
 
 // Mock dependencies
 jest.mock('../../src/utils/logger');
 jest.mock('../../src/middleware/rateLimit', () => ({
   checkRateLimit: jest.fn().mockResolvedValue(undefined),
+}));
+
+// Mock argon2 to avoid native module issues
+jest.mock('argon2', () => ({
+  hash: jest.fn((password: string) => Promise.resolve(`hashed-${password}`)),
+  verify: jest.fn((hash: string, password: string) => {
+    // Simple mock verification: check if hash matches expected format
+    return Promise.resolve(hash === `hashed-${password}`);
+  }),
+  argon2id: 2,
 }));
 
 const mockPrisma = {
@@ -35,6 +41,8 @@ const mockPrisma = {
 
 const mockEventPublisher = {
   publish: jest.fn().mockResolvedValue(undefined),
+  publishBatch: jest.fn().mockResolvedValue(undefined),
+  disconnect: jest.fn().mockResolvedValue(undefined),
 };
 
 describe('Auth Router Integration Tests', () => {
@@ -51,11 +59,17 @@ describe('Auth Router Integration Tests', () => {
     passwordResetRepo = new PasswordResetRepository(mockPrisma);
 
     const ctx = {
+      req: {} as any,
+      res: {} as any,
+      token: null,
+      prisma: mockPrisma,
       repositories: {
         users: userRepo,
         refreshTokens: refreshTokenRepo,
         passwordResets: passwordResetRepo,
-      },
+        porterProfiles: {} as any,
+        getPrisma: () => mockPrisma,
+      } as any,
       eventPublisher: mockEventPublisher,
       ipAddress: '127.0.0.1',
       userAgent: 'test-agent',
@@ -188,7 +202,7 @@ describe('Auth Router Integration Tests', () => {
 
   describe('login', () => {
     it('should login with valid email and password', async () => {
-      const passwordHash = await hashPassword('StrongPass123!');
+      const passwordHash = 'hashed-StrongPass123!';
       const mockUser = {
         id: 'user-1',
         email: 'test@example.com',
@@ -223,7 +237,7 @@ describe('Auth Router Integration Tests', () => {
     });
 
     it('should login with valid phone and password', async () => {
-      const passwordHash = await hashPassword('StrongPass123!');
+      const passwordHash = 'hashed-StrongPass123!';
       const mockUser = {
         id: 'user-2',
         email: null,
@@ -266,7 +280,7 @@ describe('Auth Router Integration Tests', () => {
     });
 
     it('should reject login with wrong password', async () => {
-      const passwordHash = await hashPassword('CorrectPassword123!');
+      const passwordHash = 'hashed-CorrectPassword123!';
       const mockUser = {
         id: 'user-1',
         email: 'test@example.com',
@@ -405,11 +419,17 @@ describe('Auth Router Integration Tests', () => {
 
     beforeEach(() => {
       const authCtx = {
+        req: {} as any,
+        res: {} as any,
+        token: null,
+        prisma: mockPrisma,
         repositories: {
           users: userRepo,
           refreshTokens: refreshTokenRepo,
           passwordResets: passwordResetRepo,
-        },
+          porterProfiles: {} as any,
+          getPrisma: () => mockPrisma,
+        } as any,
         eventPublisher: mockEventPublisher,
         ipAddress: '127.0.0.1',
         userAgent: 'test-agent',

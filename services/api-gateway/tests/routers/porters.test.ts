@@ -37,14 +37,14 @@ describe('Porters Router Tests', () => {
         {
           id: 'porter-1',
           name: 'John Porter',
-          vehicleType: 'VAN',
+          vehicleType: 'van',
           rating: 4.8,
           distance: 500,
         },
         {
           id: 'porter-2',
           name: 'Jane Porter',
-          vehicleType: 'TRUCK',
+          vehicleType: 'truck',
           rating: 4.9,
           distance: 1200,
         },
@@ -56,7 +56,7 @@ describe('Porters Router Tests', () => {
         lat: 40.7128,
         lng: -74.006,
         radiusMeters: 5000,
-        vehicleType: 'VAN',
+        vehicleType: 'van',
       });
 
       expect(result).toEqual(mockPorters);
@@ -64,7 +64,7 @@ describe('Porters Router Tests', () => {
         lat: 40.7128,
         lng: -74.006,
         radiusMeters: 5000,
-        vehicleType: 'VAN',
+        vehicleType: 'van',
       });
       expect(mockContext.logger!.info).toHaveBeenCalledWith(
         'Finding nearby porters',
@@ -160,7 +160,7 @@ describe('Porters Router Tests', () => {
         name: 'John Porter',
         email: 'john@example.com',
         phone: '+1234567890',
-        vehicleType: 'VAN',
+        vehicleType: 'van',
         rating: 4.8,
         completedOrders: 150,
       };

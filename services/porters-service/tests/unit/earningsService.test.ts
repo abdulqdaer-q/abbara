@@ -1,6 +1,20 @@
 import { EarningsService } from '../../src/services/earningsService';
 import { prisma } from '../../src/lib/prisma';
-import { EarningType, EarningStatus } from '@prisma/client';
+
+// Define enum types since Prisma client may not be generated
+enum EarningType {
+  DELIVERY_FEE = 'DELIVERY_FEE',
+  TIP = 'TIP',
+  BONUS = 'BONUS',
+  ADJUSTMENT = 'ADJUSTMENT',
+}
+
+enum EarningStatus {
+  PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
+  PAID_OUT = 'PAID_OUT',
+  CANCELLED = 'CANCELLED',
+}
 
 // Mock dependencies
 jest.mock('../../src/lib/prisma', () => ({

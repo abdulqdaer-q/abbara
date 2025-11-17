@@ -3,6 +3,21 @@ import { UserRepository } from '../../src/repositories/userRepository';
 // Mock logger
 jest.mock('../../src/utils/logger');
 
+// Mock Prisma Client types
+jest.mock('@prisma/client', () => ({
+  PrismaClient: jest.fn(),
+  UserRole: {
+    CUSTOMER: 'CUSTOMER',
+    PORTER: 'PORTER',
+    ADMIN: 'ADMIN',
+  },
+  VerificationStatus: {
+    PENDING: 'PENDING',
+    APPROVED: 'APPROVED',
+    REJECTED: 'REJECTED',
+  },
+}));
+
 const mockPrisma = {
   user: {
     create: jest.fn(),

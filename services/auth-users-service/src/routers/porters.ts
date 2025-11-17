@@ -1,8 +1,10 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { VerificationStatus } from '@prisma/client';
 import { router, authenticatedProcedure, porterProcedure, adminProcedure } from '../trpc/trpc';
 import { VerificationStatusSchema } from '@movenow/common';
+
+// Define VerificationStatus type since Prisma types may not be available
+type VerificationStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
 import {
   createPorterVerificationRequestedEvent,
   createPorterVerifiedEvent,
@@ -187,7 +189,7 @@ export const portersRouter = router({
         correlationId: ctx.correlationId,
       });
 
-      return porterProfiles.map((profile) => ({
+      return porterProfiles.map((profile: any) => ({
         id: profile.id,
         userId: profile.userId,
         user: {
@@ -330,7 +332,7 @@ export const portersRouter = router({
         correlationId: ctx.correlationId,
       });
 
-      return porterProfiles.map((profile) => ({
+      return porterProfiles.map((profile: any) => ({
         id: profile.id,
         userId: profile.userId,
         user: {

@@ -113,6 +113,7 @@ describe('Middleware Tests', () => {
           userId: 'user-1',
           email: 'test@example.com',
           role: 'CUSTOMER' as const,
+          type: 'access' as const,
         },
         isAuthenticated: true as const,
       };
@@ -126,6 +127,7 @@ describe('Middleware Tests', () => {
           userId: 'user-1',
           email: 'test@example.com',
           role: 'PORTER' as const,
+          type: 'access' as const,
         },
         isAuthenticated: true as const,
       };
@@ -139,6 +141,7 @@ describe('Middleware Tests', () => {
           userId: 'user-1',
           email: 'test@example.com',
           role: 'CUSTOMER' as const,
+          type: 'access' as const,
         },
         isAuthenticated: true as const,
       };
@@ -158,6 +161,7 @@ describe('Middleware Tests', () => {
           userId: 'user-1',
           email: 'test@example.com',
           role: 'CUSTOMER' as const,
+          type: 'access' as const,
         },
         isAuthenticated: false as any,
       };
@@ -173,6 +177,7 @@ describe('Middleware Tests', () => {
           userId: 'user-1',
           email: 'test@example.com',
           role: 'PORTER' as const,
+          type: 'access' as const,
         },
         isAuthenticated: true as const,
       };
@@ -186,6 +191,7 @@ describe('Middleware Tests', () => {
           userId: 'admin-1',
           email: 'admin@example.com',
           role: 'ADMIN' as const,
+          type: 'access' as const,
         },
         isAuthenticated: true as const,
       };
@@ -200,6 +206,7 @@ describe('Middleware Tests', () => {
           userId: 'user-1',
           email: 'test@example.com',
           role: 'CUSTOMER' as const,
+          type: 'access' as const,
         },
         isAuthenticated: true as const,
       };
@@ -215,17 +222,17 @@ describe('Middleware Tests', () => {
 
     it('should handle role hierarchy correctly', () => {
       const customerContext = {
-        user: { userId: 'user-1', role: 'CUSTOMER' as const },
+        user: { userId: 'user-1', role: 'CUSTOMER' as const, type: 'access' as const },
         isAuthenticated: true as const,
       };
 
       const porterContext = {
-        user: { userId: 'user-2', role: 'PORTER' as const },
+        user: { userId: 'user-2', role: 'PORTER' as const, type: 'access' as const },
         isAuthenticated: true as const,
       };
 
       const adminContext = {
-        user: { userId: 'user-3', role: 'ADMIN' as const },
+        user: { userId: 'user-3', role: 'ADMIN' as const, type: 'access' as const },
         isAuthenticated: true as const,
       };
 
@@ -253,6 +260,7 @@ describe('Middleware Tests', () => {
           userId: 'user-1',
           email: 'test@example.com',
           role: 'CUSTOMER' as const,
+          type: 'access' as const,
         },
         isAuthenticated: true as const,
       };
@@ -266,6 +274,7 @@ describe('Middleware Tests', () => {
           userId: 'admin-1',
           email: 'admin@example.com',
           role: 'ADMIN' as const,
+          type: 'access' as const,
         },
         isAuthenticated: true as const,
       };
@@ -281,6 +290,7 @@ describe('Middleware Tests', () => {
           userId: 'user-1',
           email: 'test@example.com',
           role: 'CUSTOMER' as const,
+          type: 'access' as const,
         },
         isAuthenticated: true as const,
       };
@@ -295,6 +305,7 @@ describe('Middleware Tests', () => {
           userId: 'porter-1',
           email: 'porter@example.com',
           role: 'PORTER' as const,
+          type: 'access' as const,
         },
         isAuthenticated: true as const,
       };

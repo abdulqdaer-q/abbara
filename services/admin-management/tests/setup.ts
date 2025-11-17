@@ -1,5 +1,3 @@
-import { config } from '../src/lib/config';
-
 // Set test environment variables
 process.env.NODE_ENV = 'test';
 process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/movenow_admin_test';
