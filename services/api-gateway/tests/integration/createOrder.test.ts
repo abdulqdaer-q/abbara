@@ -55,7 +55,7 @@ describe('Create Order Integration Test', () => {
           expect(callSequence[0]).toBe('pricing.estimate');
 
           // Validate input has price
-          expect(input.priceCents).toBe(4750); // 2000 + 2500 + 500 (2 porters)
+          expect(input.priceCents).toBe(5000); // 2000 + 2500 + 500 (2 porters)
 
           return {
             orderId: 'order-789',
@@ -118,7 +118,7 @@ describe('Create Order Integration Test', () => {
     // Assertions
     expect(result).toEqual({
       orderId: 'order-789',
-      priceCents: 4750,
+      priceCents: 5000,
       estimatedDuration: 1800,
     });
 
@@ -142,7 +142,7 @@ describe('Create Order Integration Test', () => {
       porterCount: 2,
       scheduledAt: undefined,
       notes: 'Please handle with care',
-      priceCents: 4750,
+      priceCents: 5000,
     });
 
     // Verify logging

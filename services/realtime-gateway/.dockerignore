@@ -1,0 +1,16 @@
+node_modules
+dist
+coverage
+.env
+.env.local
+.git
+.gitignore
+*.md
+tests
+*.test.ts
+*.spec.ts
+jest.config.js
+.eslintrc.js
+.prettierrc
+tsconfig.json
+pnpm-lock.yaml

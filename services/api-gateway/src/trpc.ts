@@ -12,7 +12,7 @@ export const t = initTRPC.context<Context>().create({
       ...shape,
       data: {
         ...shape.data,
-        correlationId: error.cause?.correlationId,
+        correlationId: (error.cause as any)?.correlationId,
       },
     };
   },

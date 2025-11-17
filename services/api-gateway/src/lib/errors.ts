@@ -102,9 +102,11 @@ function statusCodeToTRPCCode(statusCode: number): TRPCError['code'] {
     case 500:
       return 'INTERNAL_SERVER_ERROR';
     case 502:
-      return 'BAD_GATEWAY';
+      // Bad Gateway - map to INTERNAL_SERVER_ERROR as tRPC doesn't have BAD_GATEWAY
+      return 'INTERNAL_SERVER_ERROR';
     case 503:
-      return 'SERVICE_UNAVAILABLE';
+      // Service Unavailable - map to INTERNAL_SERVER_ERROR as tRPC doesn't have SERVICE_UNAVAILABLE
+      return 'INTERNAL_SERVER_ERROR';
     default:
       return 'INTERNAL_SERVER_ERROR';
   }
@@ -117,7 +119,7 @@ export function wrapDownstreamError(error: unknown, serviceName: string, correla
   const message = error instanceof Error ? error.message : 'Unknown error';
 
   return new TRPCError({
-    code: 'BAD_GATEWAY',
+    code: 'INTERNAL_SERVER_ERROR',
     message: `${serviceName} error: ${message}`,
     cause: {
       correlationId,
