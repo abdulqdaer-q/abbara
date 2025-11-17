@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
-import { JobOfferService } from '../../src/services/jobOfferService';
+import jobOfferService from '../../src/services/jobOfferService';
 import { prisma } from '../../src/lib/prisma';
 import { OfferStatus, AssignmentStatus } from '@prisma/client';
 
@@ -9,10 +9,7 @@ jest.mock('../../src/lib/metrics');
 jest.mock('../../src/lib/correlation');
 
 describe('JobOfferService', () => {
-  let jobOfferService: JobOfferService;
-
   beforeEach(() => {
-    jobOfferService = new JobOfferService();
     jest.clearAllMocks();
   });
 

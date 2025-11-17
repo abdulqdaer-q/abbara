@@ -119,9 +119,9 @@ jobs:
         env:
           PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING: 1
 
-      - name: Run database migrations
+      - name: Push database schema
         working-directory: ${{ env.SERVICE_PATH }}
-        run: pnpm prisma:migrate:deploy
+        run: npx prisma db push --accept-data-loss
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/movenow_porters_test
 
