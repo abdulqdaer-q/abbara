@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Filter, Eye, Ban, CheckCircle } from 'lucide-react';
+import { Search, Eye, Ban, CheckCircle } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 
 export const UsersPage: React.FC = () => {

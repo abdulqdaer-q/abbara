@@ -83,7 +83,7 @@ export const LoginPage: React.FC = () => {
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
           <p className="text-xs text-gray-500 text-center mt-4">
-            Demo: Use any email containing "admin" (e.g., admin@movenow.com)
+            Demo: Use any email containing &quot;admin&quot; (e.g., admin@movenow.com)
           </p>
         </form>
       </div>
