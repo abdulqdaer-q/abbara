@@ -129,7 +129,7 @@ function generateDateLabels(dateFrom: Date, dateTo: Date, groupBy: string): stri
   return labels;
 }
 
-async function getOrdersAnalytics(dateFrom: Date, dateTo: Date, groupBy: string) {
+async function getOrdersAnalytics(dateFrom: Date, dateTo: Date, _groupBy: string) {
   // Simplified - in production, use proper SQL aggregation
   const orders = await prisma.order.findMany({
     where: {
@@ -160,7 +160,7 @@ async function getOrdersSummary(dateFrom: Date, dateTo: Date) {
   return { total, completed, cancelled, completionRate: total > 0 ? (completed / total) * 100 : 0 };
 }
 
-async function getRevenueAnalytics(dateFrom: Date, dateTo: Date, groupBy: string) {
+async function getRevenueAnalytics(dateFrom: Date, dateTo: Date, _groupBy: string) {
   const revenue = await prisma.order.aggregate({
     where: {
       createdAt: { gte: dateFrom, lte: dateTo },
@@ -195,16 +195,16 @@ async function getRevenueSummary(dateFrom: Date, dateTo: Date) {
   };
 }
 
-async function getRatingsAnalytics(dateFrom: Date, dateTo: Date, groupBy: string) {
+async function getRatingsAnalytics(_dateFrom: Date, _dateTo: Date, _groupBy: string) {
   // Placeholder - would integrate with ratings service
   return [{ label: 'Average Rating', data: [4.5] }];
 }
 
-async function getRatingsSummary(dateFrom: Date, dateTo: Date) {
+async function getRatingsSummary(_dateFrom: Date, _dateTo: Date) {
   return { averageRating: 4.5, totalRatings: 0 };
 }
 
-async function getPorterActivityAnalytics(dateFrom: Date, dateTo: Date, groupBy: string) {
+async function getPorterActivityAnalytics(_dateFrom: Date, _dateTo: Date, _groupBy: string) {
   const activePorters = await prisma.user.count({
     where: { role: 'PORTER', status: 'ACTIVE' },
   });
@@ -212,7 +212,7 @@ async function getPorterActivityAnalytics(dateFrom: Date, dateTo: Date, groupBy:
   return [{ label: 'Active Porters', data: [activePorters] }];
 }
 
-async function getPorterActivitySummary(dateFrom: Date, dateTo: Date) {
+async function getPorterActivitySummary(_dateFrom: Date, _dateTo: Date) {
   const totalPorters = await prisma.user.count({ where: { role: 'PORTER' } });
   const activePorters = await prisma.user.count({
     where: { role: 'PORTER', status: 'ACTIVE' },
@@ -224,7 +224,7 @@ async function getPorterActivitySummary(dateFrom: Date, dateTo: Date) {
   return { totalPorters, activePorters, verifiedPorters };
 }
 
-async function getUserGrowthAnalytics(dateFrom: Date, dateTo: Date, groupBy: string) {
+async function getUserGrowthAnalytics(dateFrom: Date, dateTo: Date, _groupBy: string) {
   const users = await prisma.user.count({
     where: { createdAt: { gte: dateFrom, lte: dateTo } },
   });
@@ -241,7 +241,7 @@ async function getUserGrowthSummary(dateFrom: Date, dateTo: Date) {
   return { newUsers, totalUsers };
 }
 
-async function getPromoUsageAnalytics(dateFrom: Date, dateTo: Date, groupBy: string) {
+async function getPromoUsageAnalytics(_dateFrom: Date, _dateTo: Date, _groupBy: string) {
   const promoCodes = await prisma.promoCode.findMany({
     select: { code: true, usageCount: true },
   });

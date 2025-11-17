@@ -1,5 +1,6 @@
 import { appRouter } from '../../src/routers';
 import { Context } from '../../src/context';
+import { prisma } from '../../src/lib/prisma';
 
 jest.mock('../../src/lib/logger');
 jest.mock('../../src/lib/prisma', () => ({
@@ -50,8 +51,6 @@ describe('Admin Management Router Tests', () => {
 
   describe('users router', () => {
     it('should list users with filters', async () => {
-      const { prisma } = require('../../src/lib/prisma');
-
       prisma.user.findMany.mockResolvedValue([
         {
           id: 'user-1',
@@ -73,7 +72,6 @@ describe('Admin Management Router Tests', () => {
     });
 
     it('should get single user by ID', async () => {
-      const { prisma } = require('../../src/lib/prisma');
 
       const mockUser = {
         id: 'user-1',
@@ -91,7 +89,6 @@ describe('Admin Management Router Tests', () => {
     });
 
     it('should update user details', async () => {
-      const { prisma } = require('../../src/lib/prisma');
 
       const updatedUser = {
         id: 'user-1',
@@ -113,8 +110,6 @@ describe('Admin Management Router Tests', () => {
 
   describe('analytics router', () => {
     it('should get order statistics', async () => {
-      const { prisma } = require('../../src/lib/prisma');
-
       prisma.order.count.mockResolvedValue(100);
       prisma.order.groupBy.mockResolvedValue([
         { status: 'COMPLETED', _count: 50 },
@@ -133,8 +128,6 @@ describe('Admin Management Router Tests', () => {
     });
 
     it('should filter analytics by date range', async () => {
-      const { prisma } = require('../../src/lib/prisma');
-
       prisma.order.count.mockResolvedValue(50);
       prisma.order.groupBy.mockResolvedValue([]);
       prisma.order.aggregate.mockResolvedValue({
@@ -152,7 +145,6 @@ describe('Admin Management Router Tests', () => {
 
   describe('promoCodes router', () => {
     it('should create promo code', async () => {
-      const { prisma } = require('../../src/lib/prisma');
 
       const mockPromo = {
         id: 'promo-1',
@@ -175,7 +167,6 @@ describe('Admin Management Router Tests', () => {
     });
 
     it('should list promo codes', async () => {
-      const { prisma } = require('../../src/lib/prisma');
 
       const mockPromos = [
         { id: 'promo-1', code: 'SAVE20', isActive: true },
@@ -190,7 +181,6 @@ describe('Admin Management Router Tests', () => {
     });
 
     it('should deactivate promo code', async () => {
-      const { prisma } = require('../../src/lib/prisma');
 
       const deactivatedPromo = {
         id: 'promo-1',
@@ -210,7 +200,6 @@ describe('Admin Management Router Tests', () => {
 
   describe('vehicleTypes router', () => {
     it('should list vehicle types', async () => {
-      const { prisma } = require('../../src/lib/prisma');
 
       const mockVehicles = [
         {
@@ -236,7 +225,6 @@ describe('Admin Management Router Tests', () => {
     });
 
     it('should create vehicle type', async () => {
-      const { prisma } = require('../../src/lib/prisma');
 
       const mockVehicle = {
         id: 'vehicle-1',
@@ -259,7 +247,6 @@ describe('Admin Management Router Tests', () => {
     });
 
     it('should update vehicle type', async () => {
-      const { prisma } = require('../../src/lib/prisma');
 
       const updatedVehicle = {
         id: 'vehicle-1',

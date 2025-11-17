@@ -1,6 +1,4 @@
 import { appRouter } from '../../src/routers';
-import { createContext } from '../../src/context';
-import { generateToken } from '../../src/middleware/auth';
 
 describe('Users Router Integration Tests', () => {
   const mockContext = {
