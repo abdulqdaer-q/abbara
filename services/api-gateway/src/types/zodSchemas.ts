@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import {
   CreateOrderInput,
-  LocationSchema,
   VehicleTypeSchema,
   PaymentMethodSchema,
   OrderStatusSchema,

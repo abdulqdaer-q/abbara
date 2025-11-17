@@ -1,4 +1,5 @@
 import { createTRPCProxyClient, httpBatchLink } from '@trpc/client';
+import type { AnyRouter } from '@trpc/server';
 import superjson from 'superjson';
 import { CORRELATION_ID_HEADER } from './correlation';
 
@@ -6,7 +7,7 @@ import { CORRELATION_ID_HEADER } from './correlation';
  * Generic tRPC client factory for internal service-to-service communication
  * Uses httpBatchLink for efficient batching of multiple requests
  */
-export function createInternalTRPCClient<TRouter>(
+export function createInternalTRPCClient<TRouter extends AnyRouter>(
   serviceUrl: string,
   correlationId?: string
 ) {
@@ -217,12 +218,14 @@ export interface NotificationsServiceRouter {
 
 /**
  * Service clients registry
+ * Note: Using 'any' for router types as these are placeholder interfaces.
+ * In production, import actual router types from each service package.
  */
 export interface ServiceClients {
-  auth: ReturnType<typeof createInternalTRPCClient<AuthServiceRouter>>;
-  orders: ReturnType<typeof createInternalTRPCClient<OrdersServiceRouter>>;
-  pricing: ReturnType<typeof createInternalTRPCClient<PricingServiceRouter>>;
-  porters: ReturnType<typeof createInternalTRPCClient<PortersServiceRouter>>;
-  payments: ReturnType<typeof createInternalTRPCClient<PaymentsServiceRouter>>;
-  notifications: ReturnType<typeof createInternalTRPCClient<NotificationsServiceRouter>>;
+  auth: any;
+  orders: any;
+  pricing: any;
+  porters: any;
+  payments: any;
+  notifications: any;
 }
