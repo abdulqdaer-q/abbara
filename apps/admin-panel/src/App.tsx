@@ -10,6 +10,7 @@ import { UsersPage } from './modules/users/pages/UsersPage';
 import { OrdersPage } from './modules/orders/pages/OrdersPage';
 import { VehiclesPage } from './modules/vehicles/pages/VehiclesPage';
 import { PromosPage } from './modules/promos/pages/PromosPage';
+import { PortersPage } from './modules/porters/pages/PortersPage';
 import { AnalyticsPage } from './modules/analytics/pages/AnalyticsPage';
 import { SettingsPage } from './modules/settings/pages/SettingsPage';
 
@@ -27,6 +28,7 @@ function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/users" element={<UsersPage />} />
         <Route path="/orders" element={<OrdersPage />} />
+        <Route path="/porters" element={<PortersPage />} />
         <Route path="/vehicles" element={<VehiclesPage />} />
         <Route path="/promos" element={<PromosPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
